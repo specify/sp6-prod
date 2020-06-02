@@ -152,4 +152,4 @@ foreach($data as $key => $row){
 echo '</tbody>';
 
 
-require_once('../components/footer.php');
+footer();

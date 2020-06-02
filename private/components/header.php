@@ -1,28 +1,44 @@
 <?php
 
-/*
- *
- * CONSTANTS (should be defined before including this file):
- * DATABASE - connects to MySQL database (only if this constant is defined)
- * CSS - links a specified CSS file from the 'css' folder (extension not required)
- * JQUERY - whether to include jQuery (bool)(default = false)
- * BOOTSTRAP - whether to include Bootstrap (bool)(default = true)
- * TIMEZONE - specify the timezone to use (default = 'UTC)
- *
- * */
+//var_dump(dirname(__FILE__));exit();
+//set_include_path(get_include_path() . PATH_SEPARATOR . $_SERVER['DOCUMENT_ROOT']);
 
-define('LINK', 'http://i.o/private/');
+#var_dump(scandir('../'));exit();
+
+function require_file($require){
+
+	require_once(dirname(__FILE__).'/'.$require);
+
+}
+
+function footer(){
+
+	require_file('footer.php');
+
+}
+
+require_file('../config.php');
+
+if(LOG_IPS)
+	require_file('ip_access.php');
+
 
 error_reporting(E_ALL | E_STRICT);
 ini_set('display_errors', 1);
+
+if(defined('MEMORY_LIMIT'))
+	ini_set('memory_limit', MEMORY_LIMIT);
 
 if(defined('TIMEZONE'))
 	date_default_timezone_set(TIMEZONE);
 else
 	date_default_timezone_set('America/Chicago');
 
-if(defined('DATABASE'))
-	require_once('mysql.php');
+if(defined('DATABASE')){
+	require_file('mysql.php');
+}
+
+if(!defined('NO_HEAD')){
 
 ?><!-- Developed by Specify Software (https://www.sustain.specifysoftware.org/) -->
 <!DOCTYPE html>
@@ -60,8 +76,8 @@ if(defined('DATABASE'))
 
 	if(defined('CSS')) { ?>
 		<link
-			rel="stylesheet"
-			href="<?=LINK?>css/<?=CSS?>.css"> <?php
+				rel="stylesheet"
+				href="<?=LINK?>static/css/<?=CSS?>.css"> <?php
 	}
 
 	if(!defined('BOOTSTRAP') || BOOTSTRAP == TRUE){ ?>
@@ -80,8 +96,10 @@ if(defined('DATABASE'))
 	}
 
 	if(defined('JS')){ ?>
-		<script src="<?=LINK?>js/<?=JS?>.js"></script> <?php
+		<script src="<?=LINK?>static/js/<?=JS?>.js"></script> <?php
 	} ?>
 
 </head>
-<body class="mb-4">
+<body class="mb-4"> <?php
+
+}

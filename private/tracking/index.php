@@ -1,10 +1,10 @@
 <?php
 
 
-ini_set("memory_limit", "500M");
-include("/etc/myauth.php");
-date_default_timezone_set('America/Chicago');
-$myFile = "/home/anhalt/track.dat";
+const NO_HEAD = TRUE;
+const MEMORY_LIMIT = '500M';
+
+require_once('../components/header.php');
 
 
 function getArrCount(
@@ -63,14 +63,14 @@ function formatBytes(
 if($_GET != ''){
 	if(isset($_GET["dmp"])){
 		if($_GET["dmp"] == 1){
-			$fh = fopen($myFile, 'r') or die("Unable to open file.");
+			$fh = fopen(TRACK_DAT_LOCATION, 'r') or die("Unable to open file.");
 			if($fh){
 				fseek($fh, -1024 * 1000, SEEK_END);
 				$array = explode("---------------", fread($fh, 1024 * 1000));
 			}
 			$results = array_slice($array, 0);
 			$size = count($results) - 1;
-			echo "Number of records shown: " . $size . "<br>Total Records (in last 1MB of file): " . count($array) . "<br>File Size: " . formatBytes(filesize($myFile), 2) . "<br>";
+			echo "Number of records shown: " . $size . "<br>Total Records (in last 1MB of file): " . count($array) . "<br>File Size: " . formatBytes(filesize(TRACK_DAT_LOCATION), 2) . "<br>";
 			foreach($results as $key => $value){
 				if($key != 0){
 					echo str_replace("\n", "<br>", $value);
@@ -79,9 +79,9 @@ if($_GET != ''){
 			fclose($fh);
 		}
 		elseif($_GET["dmp"] == 2) {
-			$fh = fopen($myFile, 'r') or die("Unable to open file.");
+			$fh = fopen(TRACK_DAT_LOCATION, 'r') or die("Unable to open file.");
 			//Read the data for Registration into a string
-			$data_reg = fread($fh, filesize($myFile));
+			$data_reg = fread($fh, filesize(TRACK_DAT_LOCATION));
 			$data_reg = substr($data_reg, strpos($data_reg, "date=13/07/29 09:45:23"));
 			//echo str_sandwich($data_reg, "ip=", "\n");
 			$data_reg = str_replace("\n", "<br>", $data_reg);
@@ -119,9 +119,9 @@ if($_GET != ''){
 			fclose($fh);
 		}
 		elseif($_GET["dmp"] == 3) {
-			$fh = fopen($myFile, 'r') or die("Unable to open file.");
+			$fh = fopen(TRACK_DAT_LOCATION, 'r') or die("Unable to open file.");
 			//Read the data for Registration into a string
-			$data_reg = fread($fh, filesize($myFile));
+			$data_reg = fread($fh, filesize(TRACK_DAT_LOCATION));
 			$data_reg = substr($data_reg, strpos($data_reg, "date=13/01/01"));
 			//echo str_sandwich($data_reg, "ip=", "\n");
 			$data_reg = str_replace("\n", "<br>", $data_reg);
@@ -163,9 +163,9 @@ if($_GET != ''){
 			fclose($fh);
 		}
 		elseif($_GET["dmp"] == 4) {
-			$fh = fopen($myFile, 'r') or die("Unable to open file.");
+			$fh = fopen(TRACK_DAT_LOCATION, 'r') or die("Unable to open file.");
 			//Read the data for Registration into a string
-			$data_reg = fread($fh, filesize($myFile));
+			$data_reg = fread($fh, filesize(TRACK_DAT_LOCATION));
 			$data_reg = substr($data_reg, strpos($data_reg, "date=13/01/01"));
 			//echo str_sandwich($data_reg, "ip=", "\n");
 			$data_reg = str_replace("\n", "<br>", $data_reg);
@@ -204,8 +204,8 @@ if($_GET != ''){
 			fclose($fh);
 		}
 		elseif($_GET["dmp"] == 5) {
-			$fh = fopen($myFile, 'r') or die("Unable to open file.");
-			$data_reg = fread($fh, filesize($myFile));
+			$fh = fopen(TRACK_DAT_LOCATION, 'r') or die("Unable to open file.");
+			$data_reg = fread($fh, filesize(TRACK_DAT_LOCATION));
 			$data_reg = substr($data_reg, strpos($data_reg, "date=13/01/01"));
 			$data_reg = str_replace("\n", "<br>", $data_reg);
 			$array = explode("---------------<br>", $data_reg);
@@ -236,8 +236,8 @@ if($_GET != ''){
 			fclose($fh);
 		}
 		elseif($_GET["dmp"] == 6) {
-			$fh = fopen($myFile, 'r') or die("Unable to open file.");
-			$data_reg = fread($fh, filesize($myFile));
+			$fh = fopen(TRACK_DAT_LOCATION, 'r') or die("Unable to open file.");
+			$data_reg = fread($fh, filesize(TRACK_DAT_LOCATION));
 			$data_reg = substr($data_reg, strpos($data_reg, "date=13/01/01"));
 			$data_reg = str_replace("\n", "<br>", $data_reg);
 			$array = explode("---------------<br>", $data_reg);
@@ -272,3 +272,6 @@ if($_GET != ''){
 		return;
 	}
 }
+
+
+footer();

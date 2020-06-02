@@ -4,7 +4,7 @@ if(file_exists("/etc/myauth.php"))
 	include("/etc/myauth.php");
 
 if(!isset($mysql_hst))
-	$mysql_hst = 'host.docker.internal';
+	$mysql_hst = '127.0.0.1';
 
 if(!isset($mysql_usr))
 	$mysql_usr = 'root';

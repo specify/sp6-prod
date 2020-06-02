@@ -1,7 +1,6 @@
 <?php
 
 const DATABASE = 'feedback';
-const CSS = 'feedback';
 
 require_once('../components/header.php');
 
@@ -44,4 +43,4 @@ foreach($data as $feedback){
 
 echo '</tbody></table>';
 
-require_once('../components/footer.php');
+footer();

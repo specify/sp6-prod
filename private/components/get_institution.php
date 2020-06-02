@@ -3,11 +3,14 @@
 if(count($_GET)==0)
 	exit;
 
+if($_GET['no_head']=='true')
+	define('NO_HEAD',TRUE);
+
 const DATABASE = 'stats';
 require_once('header.php');
 
 
-function getDate(
+function getFormattedDate(
 	$date,
 	$default
 ){
@@ -19,8 +22,8 @@ function getDate(
 
 }
 
-$date_1 = getDate('date1', '0000-00-00 00:00:00');
-$date_2 = getDate('date2', date("Y-m-d H:i:s", time()));
+$date_1 = getFormattedDate('date1', '0000-00-00 00:00:00');
+$date_2 = getFormattedDate('date2', date("Y-m-d H:i:s", time()));
 
 
 function getVersion(
@@ -36,6 +39,20 @@ function getVersion(
 
 $version_1 = getVersion('version1', '0.0.00');
 $version_2 = getVersion('version2', '9.9.99');
+
+
+$hide_invalid_institutions_query = '';
+$hide_invalid_institutions = $_GET['hide_invalid'] == 'true';
+if($hide_invalid_institutions)
+	$hide_invalid_institutions_query = "
+		AND `ti2`.`value` != ''
+		AND `ti2`.`value` != '\n'
+		AND `ti2`.`value` != ' '
+		AND `ti2`.`value` != '.'
+		AND `ti2`.`value` != '?'
+		AND `ti2`.`value` != '-'
+		AND `ti2`.`value` IS NOT NULL
+	";
 
 
 if(!array_key_exists('Institution_name', $_GET) && !array_key_exists('trackID', $_GET)){
@@ -87,6 +104,7 @@ if(!array_key_exists('Institution_name', $_GET) && !array_key_exists('trackID', 
 			       AND `ti2`.`name` = 'Institution_name' 
 			       AND `ti3`.`name` = 'Collection_name' 
 			       AND `ti5`.`name` = 'Collection_number' 
+			       ".$hide_invalid_institutions_query."
 			GROUP  BY `ti5`.`value` 
 			ORDER  BY MAX(`timestampmodified`) DESC";
 
@@ -136,7 +154,8 @@ if(!array_key_exists('Institution_name', $_GET) && !array_key_exists('trackID', 
 			       AND `ti2`.`name` = 'Institution_name' 
 			       AND `ti3`.`name` = 'Collection_name' 
 			       AND `ti4`.`name` = 'ISA_number' 
-			       AND `ti4`.`value` != '' 
+			       AND `ti4`.`value` != ''  
+			       ".$hide_invalid_institutions_query."
 			GROUP  BY `ti4`.`value` 
 			ORDER  BY MAX(`timestampmodified`) DESC";
 
@@ -191,7 +210,8 @@ if(!array_key_exists('Institution_name', $_GET) && !array_key_exists('trackID', 
 			       AND `ti`.`name` = 'Discipline_name' 
 			       AND `ti2`.`name` = 'Institution_name' 
 			       AND `ti3`.`name` = 'Collection_name' 
-			       AND `ti5`.`name` = 'Collection_number' 
+			       AND `ti5`.`name` = 'Collection_number'  
+			       ".$hide_invalid_institutions_query."
 			GROUP  BY `ti5`.`value` 
 			ORDER  BY MAX(`timestampmodified`) DESC";
 
@@ -199,49 +219,69 @@ if(!array_key_exists('Institution_name', $_GET) && !array_key_exists('trackID', 
 	echo '<input id="query" type="hidden" value="' . $query . '">';
 
 	$info = $mysqli->query($query);
-	$numColls = $info->num_rows;
 
-	echo '<h5># of Collections: '.$numColls.'</h5>
+	if($info === FALSE)
+		exit();
+
+	$number_of_columns = $info->num_rows;
+
+	echo '<h5># of Collections: ' . $number_of_columns . '</h5>
 	<ul class="Inst">';
 
-	if($numColls != 0){
-		$dataArray = [];
-		while($results = $info->fetch_row()){
-			$instName = $results[0];
-			if(!$instName){
-				$instName = "-null-";
-			}
-			elseif($instName == '') {
-				$instName = "-blank-";
-			}
-			elseif($instName == ' ') {
-				$instName = "-space-";
-			}
-			$dataArray[$instName] .= '<ul>';
-			$disName = $results[1];
-			$collName = $results[2];
+	if($number_of_columns == 0)
+		exit();
 
-			if(array_key_exists(5, $results)){
-				$ISAnum = $results[3];
-				$trackID = $results[4];
-				$date = $results[5];
-				$dataArray[$instName] .= '<li><a href="#trackID" onclick="changeAddr(' . $trackID . ', \'trackID\')">[' . $ISAnum . '] ' . $collName . ' (' . $disName . '): ' . $date . '</a></li>';
-			}
+	$data = [];
+	while($results = $info->fetch_row()){
+		$institution_name = $results[0];
 
-			else {
-				$trackID = $results[3];
-				$date = $results[4];
-				$dataArray[$instName] .= '<li><a href="#trackID" onclick="changeAddr(' . $trackID . ', \'trackID\')">' . $collName . ' (' . $disName . '): ' . $date . '</a></li>';
-			}
+//		if($hide_invalid_institutions && (
+//			$institution_name == null ||
+//			$institution_name == '' ||
+//			$institution_name == ' ' ||
+//			$institution_name == '-' ||
+//			$institution_name == "\n"
+//			))
+//			continue;
 
-			$dataArray[$instName] .= '</ul>';
+		if(!$institution_name)
+			$institution_name = "-null-";
+		elseif($institution_name == '')
+			$institution_name = "-blank-";
+		elseif($institution_name == "\n")
+			$institution_name = "-new_line-";
+		elseif($institution_name == "-")
+			$institution_name = "-dash-";
+		elseif($institution_name == ' ')
+			$institution_name = "-space-";
+
+		if(!array_key_exists($institution_name,$data))
+			$data[$institution_name] = '';
+
+		$data[$institution_name] .= '<ul>';
+		$disName = $results[1];
+		$collName = $results[2];
+
+		if(array_key_exists(5, $results)){
+			$isa_number = $results[3];
+			$track_id = $results[4];
+			$date = $results[5];
+			$data[$institution_name] .= '<li><a href="#trackID" data-track_id="' . $track_id . '">[' . $isa_number . '] ' . $collName . ' (' . $disName . '): ' . $date . '</a></li>';
 		}
 
-		ksort($dataArray);
-		foreach($dataArray as $key => $value)
-			echo '<li><a href="#inst" onclick="changeAddr("' . str_replace('&', '%26', $key) . '", \'inst\')">' . $key . '</a>' . $value . '</li>';
+		else {
+			$track_id = $results[3];
+			$date = $results[4];
+			$data[$institution_name] .= '<li><a href="#trackID" data-track_id="' . $track_id . '">' . $collName . ' (' . $disName . '): ' . $date . '</a></li>';
+		}
 
+		$data[$institution_name] .= '</ul>';
 	}
+
+	ksort($data);
+	foreach($data as $key => $value)
+		echo '<li><a href="#inst" data-track_id="' . str_replace('&', '%26', $key) . '" data-track_target="inst">' . $key . '</a>' . $value . '</li>';
+
 
 	$info->close();
 	echo "</ul>";
@@ -252,24 +292,28 @@ if(!array_key_exists('Institution_name', $_GET) && !array_key_exists('trackID', 
 elseif(array_key_exists('Institution_name', $_GET)) {
 
 	$isa = $_GET['isa'];
-	$instName = $_GET['Institution_name'];
+	$institution_name = $_GET['Institution_name'];
 	echo '<h2>Select a Collection</h2>
 		<h4>Note:<br>
 		Each entry is in the form of: [ISA number] Collection name (Discipline name): Date Last accessed.<br>
 		The entries are sorted by most recent collection accessed.</h4>';
 
-	$instName = str_replace('%20', '', $_GET['Institution_name']);
-	$instName = str_replace("\\", '', $instName);
-	$instName = str_replace("'s", "\\'s", $instName);
+	$institution_name = str_replace('%20', '', $institution_name);
+	$institution_name = str_replace("\\", '', $institution_name);
+	$institution_name = str_replace("'s", "\\'s", $institution_name);
 
-	if($instName == '-null-')
-		$instName = 'is null';
-	elseif($instName == '-blank-')
-		$instName = "= ''";
-	elseif($instName == '-space-')
-		$instName = "= ' '";
+	if($institution_name == '-null-')
+		$institution_name = 'is null';
+	elseif($institution_name == '-blank-')
+		$institution_name = "= ''";
+	elseif($institution_name == '-new-line-')
+		$institution_name = "= '\n'";
+	elseif($institution_name == '-dash-')
+		$institution_name = "= '-'";
+	elseif($institution_name == '-space-')
+		$institution_name = "= ' '";
 	else
-		$instName = "= '$instName'";
+		$institution_name = "= '$institution_name'";
 
 
 	if($isa == 'both')
@@ -317,7 +361,8 @@ elseif(array_key_exists('Institution_name', $_GET)) {
 			AND      `ti2`.`name` = 'Institution_name' 
 			AND      `ti3`.`name` = 'Collection_name' 
 			AND      `ti5`.`name` = 'Collection_number' 
-			AND      `ti2`.`value` $instName 
+			AND      `ti2`.`value` $institution_name 
+			".$hide_invalid_institutions_query."
 			GROUP BY ti5.value 
 			ORDER BY max(timestampmodified) DESC";
 
@@ -369,7 +414,7 @@ elseif(array_key_exists('Institution_name', $_GET)) {
 			AND      `ti3`.`name` = 'Collection_name' 
 			AND      `ti4`.`name` = 'ISA_number' 
 			AND      `ti4`.`value` != '' 
-			AND      `ti2`.`value` $instName 
+			AND      `ti2`.`value` $institution_name 
 			GROUP BY `ti4`.`value` 
 			ORDER BY MAX(`timestampmodified`) DESC";
 
@@ -430,11 +475,15 @@ elseif(array_key_exists('Institution_name', $_GET)) {
 			AND      `ti2`.`name` = 'Institution_name' 
 			AND      `ti3`.`name` = 'Collection_name' 
 			AND      `ti5`.`name` = 'Collection_number' 
-			AND      `ti2`.`value` $instName 
+			AND      `ti2`.`value` $institution_name 
 			GROUP BY `ti5`.`value` 
 			ORDER BY MAX(`timestampmodified`) DESC";
 
 	echo '<input id="query" type="hidden" value="' . $query2 . '">';
+
+	$collections = [];
+
+
 	$info2 = $mysqli->query($query2);
 
 	while($results2 = $info2->fetch_row()){
@@ -443,21 +492,22 @@ elseif(array_key_exists('Institution_name', $_GET)) {
 		$collName = $results2[1];
 
 		if(array_key_exists(4, $results2)){
-			$ISAnum = $results2[2];
-			$trackID = $results2[3];
+			$isa_number = $results2[2];
+			$track_id = $results2[3];
 			$date = $results2[4];
-			$collections[$date . $trackID] = "<a href=\"#trackID\" onclick=\"changeAddr($trackID, 'trackID')\">[$ISAnum] $collName ($disName): $date</a><br>";
+			$collections[$date . $track_id] = '<a href="#trackID" data-track_id="' . $track_id . '">['.$isa_number.'] '.$collName.' ('.$disName.'): '.$date.'</a><br>';
 		}
 
 		else {
-			$trackID = $results2[2];
+			$track_id = $results2[2];
 			$date = $results2[3];
-			$collections[$date . $trackID] = "<a href=\"#trackID\" onclick=\"changeAddr($trackID, 'trackID')\">$collName ($disName): $date</a><br>";
+			$collections[$date . $track_id] = '<a href="#trackID" data-track_id="' . $track_id . '">'.$collName.' ('.$disName.'): '.$date.'</a><br>';
 		}
 
 	}
 
 	$info2->close();
+
 
 	krsort($collections);
 	foreach($collections as $value)
@@ -468,7 +518,7 @@ elseif(array_key_exists('Institution_name', $_GET)) {
 
 elseif(array_key_exists('trackID', $_GET)) {
 
-	$trackID = $_GET["trackID"];
+	$track_id = $_GET["trackID"];
 
 	$usageStats = [];
 	$query4 = "SELECT DISTINCT `ti`.`name`
@@ -504,13 +554,14 @@ elseif(array_key_exists('trackID', $_GET)) {
 	$info4->close();
 
 	$dbInfo = [];
-	$query4 = "select distinct name from trackitem where (name like '%name' and name not in ('os_name', 'user_name')) or name like '%number' or name like '%website' or name like '%portal' or name like '%guid' or name like '%email';";
+	$query4 = "SELECT DISTINCT `name` FROM `trackitem` WHERE (`name` LIKE '%name' AND `name` NOT IN ('os_name', 'user_name')) OR `name` LIKE '%number' OR `name` LIKE '%website' OR `name` LIKE '%portal' OR `name` LIKE '%guid' OR `name` LIKE '%email';";
 	$info4 = $mysqli->query($query4);
 	while(($row = $info4->fetch_row()))
 		$dbInfo[] = $row[0];
 	$info4->close();
 
-	$query4 = "SELECT t.TimestampModified, t.IP FROM track t where t.TrackID = $trackID;";
+	$query4 = 'SELECT `t`.`TimestampModified`, `t`.`IP` FROM `track` `t` WHERE `t`.`TrackID` = '.$track_id;
+	var_dump('SELECT `t`.`TimestampModified`, `t`.`IP` FROM `track` `t` WHERE `t`.`TrackID` = '.$track_id);
 	$info4 = $mysqli->query($query4);
 	$results4 = $info4->fetch_row();
 	$info4->close();
@@ -519,22 +570,23 @@ elseif(array_key_exists('trackID', $_GET)) {
 	$IP = $results4[1];
 	$date = 'Date Last Accessed: ' . $date . '<br>';
 
-	$query5 = "SELECT Name, CountAmt, Value FROM trackitem t where trackid = $trackID;";
+	$query5 = 'SELECT `Name`, `CountAmt`, `Value` FROM `trackitem` `t` WHERE `trackid` = '.$track_id;
 	echo '<input id="query" type="hidden" value="' . $query4 . '\n' . $query5 . '">';
 	$info5 = $mysqli->query($query5);
 
+	$data = [];
 	while($results5 = $info5->fetch_assoc()){
 		$name = $results5['Name'];
 		$countAmt = $results5['CountAmt'];
 		$value = $results5['Value'];
-		$dataArray[$name] = ($countAmt == NULL
+		$data[$name] = ($countAmt == NULL
 			? $value
 			: $countAmt);
 	}
 
 	$info5->close(); ?>
 
-	<h1 style="text-align: center"><?=$dataArray['Institution_name']?></h1>
+	<h1 style="text-align: center"><?= $data['Institution_name']?></h1>
 	<h4 style="text-align: center"><?=$date?></h4> <?php
 
 	if($IP != ''){ ?>
@@ -574,7 +626,7 @@ elseif(array_key_exists('trackID', $_GET)) {
 			<tr>
 				<td style="text-align:left;vertical-align:top"> <?php
 
-					foreach($dataArray as $key => $value)
+					foreach($data as $key => $value)
 						foreach($dbInfo as $value2)
 							if($key == $value2)
 								echo $key . ': ' . $value . '<br>'; ?>
@@ -583,7 +635,7 @@ elseif(array_key_exists('trackID', $_GET)) {
 
 				<td style="text-align:left;vertical-align:top"> <?php
 
-					foreach($dataArray as $key => $value)
+					foreach($data as $key => $value)
 						foreach($dbStats as $value2)
 							if($key == $value2)
 								echo $key . ': ' . $value . '<br>'; ?>
@@ -606,7 +658,7 @@ elseif(array_key_exists('trackID', $_GET)) {
 
 				<td style="text-align:left;vertical-align:top"> <?php
 
-					foreach($dataArray as $key => $value)
+					foreach($data as $key => $value)
 						foreach($muInfo as $value2)
 							if($key == $value2)
 								echo $key . ': ' . $value . '<br>'; ?>
@@ -615,7 +667,7 @@ elseif(array_key_exists('trackID', $_GET)) {
 
 				<td style="text-align:left;vertical-align:top">  <?php
 
-					foreach($dataArray as $key => $value)
+					foreach($data as $key => $value)
 						foreach($usageStats as $value2)
 							if($key == $value2)
 								echo $key . ': ' . $value . '<br>'; ?>
@@ -628,4 +680,5 @@ elseif(array_key_exists('trackID', $_GET)) {
 
 }
 
-require_once('footer.php');
+
+footer();

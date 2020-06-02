@@ -1,13 +1,14 @@
 <?php
 
-include ("/etc/myauth.php");
-date_default_timezone_set('America/Chicago');
-ini_set("memory_limit", "200M");
+const MEMORY_LIMIT = '200M';
+const BOOTSTRAP = FALSE;
 
-$myFile = "/home/anhalt/reg.dat";
+require_once('../components/header.php');
 
 
-$fh = fopen($myFile, 'r') or die("Unable to open file.");
+$fh = fopen(REG_DAT_LOCATION, 'r') or die("Unable to open file.");
 
-$data_reg = fread($fh, filesize($myFile));
+$data_reg = fread($fh, filesize(REG_DAT_LOCATION));
 echo str_replace("\n", "<br>", $data_reg);
+
+footer();
