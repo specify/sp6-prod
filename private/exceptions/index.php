@@ -3,6 +3,7 @@
 const DATABASE = 'exception';
 
 require_once('../components/header.php');
+require_once('../components/Cache_query.php');
 
 $date_24_days_ago = date('Y-m-d 00:00:00', time() - 86400*24);
 
@@ -18,18 +19,21 @@ $query = "
 		`StackTrace` NOT LIKE 'java.lang.RuntimeException: Two controls have the same id%'
 	ORDER BY `ExceptionID` DESC";
 
-echo $query;
-$result = $mysqli->query($query);
+$columns = ['ExceptionID','TimestampCreated','TaskName','Title','Bug','Comments','StackTrace','ClassName','Id','OSName','OSVersion','JavaVersion','JavaVendor','UserName','IP','AppVersion','collection','discipline','division','institution','DoIgnore'];
+$empty_columns = $columns;
 
-$data = [];
-while($row = $result->fetch_assoc())
-  $data[]=$row;
-$result->close();
+$update_cache = array_key_exists('update_cache',$_GET) && $_GET['update_cache'] == 'true';
+$cache = new Cache_query($query,EXCEPTIONS_CACHE_DIRECTORY,EXCEPTIONS_CACHE_DURATION, $columns, $update_cache);
+$data = $cache->get_result();
+
 
 $total_number_of_occurrences = [];
 $exception_ids = [];
 $file_location = [];
-$keys = []; ?>
+$keys = [];
+
+
+$cache->get_status(); ?>
 
 
 <table class="table table-striped mt-5 mb-5">
@@ -45,8 +49,17 @@ $keys = []; ?>
 
 		foreach($data as $key => $row){
 
+
+			if(!array_key_exists('StackTrace',$row))
+				continue;
+
 			$exception_id = $row['ExceptionID'];
-			$exception_statement = $row['stacktrace'];
+			$exception_statement = $row['StackTrace'];
+
+			foreach($empty_columns as $key_2 => $column)//hide sql cols that are always empty
+				if(strlen($column)!==0)
+					unset($empty_columns[$key_2]);
+
 
 			$exception_statement_index = strpos($exception_statement, "edu.ku.brc");
 			if($exception_statement_index !== FALSE){
@@ -57,17 +70,6 @@ $keys = []; ?>
 
 				$file_name = substr($exception_statement, $file_name_begins + 1, ($file_name_ends - $file_name_begins - 1));
 				$error_string = substr($exception_statement, $exception_statement_index, ($file_name_begins-$exception_statement_index));
-
-				/*if($exception_id==412698){
-					var_dump($end_of_line_position,
-					substr($exception_statement, $end_of_line_position+1),
-					strpos(substr($exception_statement, $end_of_line_position+1),"\n"),
-					substr($exception_statement, $end_of_line_position, strpos(substr($exception_statement, $end_of_line_position+1),"\n")));exit();
-
-				}*/
-
-				//if(substr($error_string,0,-1)=="java.lang.NullPointerException")
-				//	$error_string = substr($error_string,0,-1).' '.substr($exception_statement, $end_of_line_position, strpos(substr($exception_statement, $end_of_line_position+1),"\n"));
 
 				if(array_key_exists($error_string,$total_number_of_occurrences))
 					$total_number_of_occurrences[$error_string]++;
@@ -118,12 +120,15 @@ $keys = []; ?>
 
 <table class="table table-striped mb-5"> <?php
 
-function print_headers($headers){ ?>
+function print_headers($headers){
+
+	global $empty_columns;?>
 
 	<thead>
 		<tr> <?php
 			foreach($headers as $header)
-				echo "<th>$header</th>"; ?>
+				if(array_search($header,$empty_columns)===FALSE)
+					echo "<th>$header</th>"; ?>
 		</tr>
 	</thead>
 	<tbody> <?php
@@ -138,6 +143,9 @@ foreach($data as $key => $row){
 
 	echo '<tr>';
 		foreach($row as $row_name => $value){
+
+			if(array_search($row_name,$empty_columns)!==FALSE)
+				continue;
 
 			if($row_name =="ExceptionID")
 				echo '<td><a id="'.$value.'">'.$value.'</td>';

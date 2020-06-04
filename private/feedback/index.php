@@ -3,19 +3,22 @@
 const DATABASE = 'feedback';
 
 require_once('../components/header.php');
+require_once('../components/Cache_query.php');
 
 
-$sql = "SELECT * FROM `feedback` ORDER BY `FeedbackID` DESC";
-$result = $mysqli->query($sql);
-$data = [];
 
-while ($row = $result->fetch_assoc())
-    $data[] = $row;
-$result->close();
+$query = "SELECT * FROM `feedback` ORDER BY `FeedbackID` DESC";
 
-$number_of_results = count($data); ?>
+$columns = ['FeedbackID','TimestampCreated','Subject','Component','Issue','Comments','Id','OSName','OSVersion','JavaVersion','JavaVendor','AppVersion','Collection','Discipline','Division','Institution'];
+$empty_columns = $columns;
 
-Number of Entries: <?=$number_of_results?>
+$update_cache = array_key_exists('update_cache',$_GET) && $_GET['update_cache'] == 'true';
+$cache = new Cache_query($query,FEEDBACK_CACHE_DIRECTORY,FEEDBACK_CACHE_DURATION, $columns, $update_cache);
+$data = $cache->get_result();
+
+$number_of_results = count($data);
+
+$cache->get_status($number_of_results); ?>
 
 <table class="table table-striped mt-5 mb-5"> <?php
 

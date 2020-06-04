@@ -20,6 +20,12 @@ define('TRACK_DAT_LOCATION','/home/ec2-user/data/stats_databases/track.dat');
 #define('TRACK_DAT_LOCATION','/home/anhalt/reg.dat');
 define('REG_DAT_LOCATION','/home/ec2-user/data/stats_databases/reg.dat');
 
+define('EXCEPTIONS_CACHE_DIRECTORY','../exceptions/');
+define('EXCEPTIONS_CACHE_DURATION',4*86400);//4 days
+
+define('FEEDBACK_CACHE_DIRECTORY','../feedback/');
+define('FEEDBACK_CACHE_DURATION',4*86400);//4 days
+
 
 define('LOG_IPS',TRUE);
 define('BLOCK_EXTERNAL_IPS',FALSE);
