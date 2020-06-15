@@ -1,6 +1,5 @@
 <?php
 
-
 const NO_HEAD = TRUE;
 const MEMORY_LIMIT = '500M';
 
@@ -53,9 +52,7 @@ function formatBytes(
 	);
 	$pow = min($pow, count($units) - 1);
 
-	//Uncomment one of the following alternatives
-	//$bytes /= pow(1024, $pow);
-	$bytes /= (1 << (10 * $pow));
+	$bytes /= pow(1024, $pow);
 
 	return round($bytes, $precision) . ' ' . $units[$pow];
 }
@@ -83,7 +80,6 @@ if($_GET != ''){
 			//Read the data for Registration into a string
 			$data_reg = fread($fh, filesize(TRACK_DAT_LOCATION));
 			$data_reg = substr($data_reg, strpos($data_reg, "date=13/07/29 09:45:23"));
-			//echo str_sandwich($data_reg, "ip=", "\n");
 			$data_reg = str_replace("\n", "<br>", $data_reg);
 			$array = explode("---------------<br>", $data_reg);
 			$count = 0;
@@ -123,21 +119,14 @@ if($_GET != ''){
 			//Read the data for Registration into a string
 			$data_reg = fread($fh, filesize(TRACK_DAT_LOCATION));
 			$data_reg = substr($data_reg, strpos($data_reg, "date=13/01/01"));
-			//echo str_sandwich($data_reg, "ip=", "\n");
 			$data_reg = str_replace("\n", "<br>", $data_reg);
 			$array = explode("---------------<br>", $data_reg);
-			//$count = 0;
 			foreach($array as $key => $value){
 				$ip = str_sandwich($value, "ip=", "<br>");
-				if(strpos($ip, "129.237.201.") === FALSE){
-					//$count++;
-					//if(str_sandwich($value, "app_version=", "<br>") != "6.5.00")
-					//{
+				if(strpos($ip, "129.237.201.") === FALSE)
 					$array2[$ip] = $value;
-					//}
-				}
 			}
-			echo "Workstations logged in from Jan 1, 2013 to now: " . count($array2)/* . "<br>Entries since the 6.5.00 release date: " . $count*/ . "<br>";
+			echo "Workstations logged in from Jan 1, 2013 to now: " . count($array2). "<br>";
 			foreach($array2 as $key => $value){
 				$os = str_sandwich($value, "os_name=", "<br>");
 				if(substr_count($value, "<br>") > 3){
@@ -146,7 +135,6 @@ if($_GET != ''){
 				}
 
 			}
-			//echo "-----Workstations NOT running 6.5.00-----<br>";
 			echo "-----Workstations-----<br>";
 			foreach($array4 as $osType => $osCount){
 				foreach($array3 as $value){
@@ -167,7 +155,6 @@ if($_GET != ''){
 			//Read the data for Registration into a string
 			$data_reg = fread($fh, filesize(TRACK_DAT_LOCATION));
 			$data_reg = substr($data_reg, strpos($data_reg, "date=13/01/01"));
-			//echo str_sandwich($data_reg, "ip=", "\n");
 			$data_reg = str_replace("\n", "<br>", $data_reg);
 			$array = explode("---------------<br>", $data_reg);
 			foreach($array as $key => $value){
@@ -197,10 +184,6 @@ if($_GET != ''){
 				echo $instType . ": " . $instCount . "<br>";
 			}
 			echo "===================================<br>";
-			/*foreach($array2 as $value)
-			{
-				echo  $value . "===================================<br>";
-			}*/
 			fclose($fh);
 		}
 		elseif($_GET["dmp"] == 5) {

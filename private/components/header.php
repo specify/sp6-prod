@@ -1,10 +1,5 @@
 <?php
 
-//var_dump(dirname(__FILE__));exit();
-//set_include_path(get_include_path() . PATH_SEPARATOR . $_SERVER['DOCUMENT_ROOT']);
-
-#var_dump(scandir('../'));exit();
-
 function require_file($require){
 
 	require_once(dirname(__FILE__).'/'.$require);
@@ -80,7 +75,7 @@ if(!defined('NO_HEAD')){
 				href="<?=LINK?>static/css/<?=CSS?>.css"> <?php
 	}
 
-	if(!defined('BOOTSTRAP') || BOOTSTRAP == TRUE){ ?>
+	if(!defined('BOOTSTRAP') || BOOTSTRAP){ ?>
 		<link
 				rel="stylesheet"
 				href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css"
@@ -88,7 +83,7 @@ if(!defined('NO_HEAD')){
 				crossorigin="anonymous"/> <?php
 	}
 
-	if(defined('JQUERY') && JQUERY == TRUE){ ?>
+	if(defined('JQUERY') && JQUERY){ ?>
 		<script
 				src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.slim.min.js"
 				integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs="

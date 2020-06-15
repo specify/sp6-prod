@@ -37,22 +37,19 @@ function getVersion(
 		return strval($_GET[$version]);
 }
 
-$version_1 = getVersion('version1', '0.0.00');
-$version_2 = getVersion('version2', '9.9.99');
+$version_1 = getVersion('version1', '6.0.01');
+$version_2 = getVersion('version2', '6.9.99');
 
 
-$hide_invalid_institutions_query = '';
-$hide_invalid_institutions = $_GET['hide_invalid'] == 'true';
-if($hide_invalid_institutions)
-	$hide_invalid_institutions_query = "
-		AND `ti2`.`value` != ''
-		AND `ti2`.`value` != '\n'
-		AND `ti2`.`value` != ' '
-		AND `ti2`.`value` != '.'
-		AND `ti2`.`value` != '?'
-		AND `ti2`.`value` != '-'
-		AND `ti2`.`value` IS NOT NULL
-	";
+$hide_invalid_institutions_query = "
+	AND `ti2`.`value` != ''
+	AND `ti2`.`value` != '\n'
+	AND `ti2`.`value` != ' '
+	AND `ti2`.`value` != '.'
+	AND `ti2`.`value` != '?'
+	AND `ti2`.`value` != '-'
+	AND `ti2`.`value` IS NOT NULL
+";
 
 
 if(!array_key_exists('Institution_name', $_GET) && !array_key_exists('trackID', $_GET)){
@@ -70,9 +67,9 @@ if(!array_key_exists('Institution_name', $_GET) && !array_key_exists('trackID', 
 			       )                        AS 'tid', 
 			       MAX(`t`.`timestampmodified`) AS 'time' 
 			FROM   `trackitem` `ti`, 
-			       `trackitem` ti2, 
-			       `trackitem` ti3, 
-			       `trackitem` ti5, 
+			       `trackitem` `ti2`, 
+			       `trackitem` `ti3`, 
+			       `trackitem` `ti5`, 
 			       `track` `t`, 
 			       (SELECT MAX(`ti`.`trackid`) AS 'maxtid', 
 			               COUNT(*) 
@@ -83,7 +80,7 @@ if(!array_key_exists('Institution_name', $_GET) && !array_key_exists('trackID', 
 			        WHERE  `t`.`trackid` = `ti`.`trackid` 
 			               AND `ti`.`trackid` = `ti2`.`trackid` 
 			               AND `ti`.`trackid` = `ti3`.`trackid` 
-			               AND NOT ( ( `t`.`ip` <= '129.`237.201.999' 
+			               AND NOT ( ( `t`.`ip` <= '129.237.201.999' 
 			                           AND `t`.`ip` >= '129.237.201.0' ) 
 			                          OR ( `t`.`ip` <= '129.237.229.999' 
 			                               AND `t`.`ip` >= '129.237.229.0' ) ) 
@@ -233,16 +230,8 @@ if(!array_key_exists('Institution_name', $_GET) && !array_key_exists('trackID', 
 
 	$data = [];
 	while($results = $info->fetch_row()){
-		$institution_name = $results[0];
 
-//		if($hide_invalid_institutions && (
-//			$institution_name == null ||
-//			$institution_name == '' ||
-//			$institution_name == ' ' ||
-//			$institution_name == '-' ||
-//			$institution_name == "\n"
-//			))
-//			continue;
+		$institution_name = $results[0];
 
 		if(!$institution_name)
 			$institution_name = "-null-";
@@ -276,6 +265,7 @@ if(!array_key_exists('Institution_name', $_GET) && !array_key_exists('trackID', 
 		}
 
 		$data[$institution_name] .= '</ul>';
+
 	}
 
 	ksort($data);
