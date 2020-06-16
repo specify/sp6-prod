@@ -12,7 +12,7 @@
  * */
 
 #define('LINK', 'http://biwebdbtest.nhm.ku.edu/sp6-prod/');
-define('LINK', 'https://private.maxxxxxdlp.ml/');
+define('LINK', 'https://specify.maxxxxxdlp.ml/private/');
 
 #define('TRACK_DAT_LOCATION','/home/anhalt/track.dat');
 define('TRACK_DAT_LOCATION','/home/ec2-user/data/stats_databases/track.dat');

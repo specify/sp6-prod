@@ -26,12 +26,10 @@ $info_2->close();
 
 //GET PARAMETERS
 
-$possible_parameters = ['date_1','date_2','version_1','version_2','isa','collection','track_id'];
+$possible_parameters = ['date_1','date_2','version_1','version_2','isa','institution','track_id','show_last_days'];
 foreach($possible_parameters as $parameter)
 	if(!array_key_exists($parameter,$_GET))
-		$_GET[$parameter] = '';
-
-?>
+		$_GET[$parameter] = ''; ?>
 
 
 <form class="mb-4" id="controls">
@@ -54,39 +52,43 @@ foreach($possible_parameters as $parameter)
 
 	<label>
 		OR Show last
-		<input type="number" id="show_last_days" class="form-control" value="<?=$_GET['show_last_days']?>">
+		<input list="browsers"  id="show_last_days" class="form-control" value="<?=$_GET['show_last_days']?>">
+		<datalist id="browsers">
+			<option value="15">
+			<option value="30">
+			<option value="45">
+			<option value="60">
+		</datalist>
 		days
 	</label>
 	<br><br>
 
 	<label for="versions1">Specify versions between:</label>
 	<select id="versions1"
-	        class="form-control">
-	  <option value="">Specify version</option> <?php
+	        class="form-control"> <?php
 		foreach($specify_versions as $value){
 
 			$selected = '';
 			if($value==$_GET['version_1'])
 				$selected = ' selected';
 
-			echo "<option value=\"$value\" '.$selected.'>$value</option>";
+			echo '<option value="'.$value.'" '.$selected.'>'.$value.'</option>';
 
-		}?>
+		} ?>
 	</select>
 
 	<label for="versions2">and</label>
 	<select id="versions2"
-	        class="form-control">
-		<option value="">Specify version</option> <?php
+	        class="form-control"> <?php
 		foreach($specify_versions as $value){
 
 			$selected = '';
 			if($value == $_GET['version_2'])
 				$selected = ' selected';
 
-			echo "<option value=\"$value\" '.$selected.'>$value</option>";
+			echo '<option value="'.$value.'" '.$selected.'>'.$value.'</option>';
 
-		}?>
+		} ?>
 	</select><br><br>
 
 	<label for="isa">ISA:</label>
@@ -97,25 +99,40 @@ foreach($possible_parameters as $parameter)
 		<option value="not" <?php if($_GET['isa'] == 'not') echo 'selected'?>>Institutions without ISA</option>
 	</select><br><br>
 
-	<input
-			id="submit"
-			type="submit"
-			value="Search"
-			class="btn btn-primary btn-lg">
+	<a
+		id="submit"
+		class="btn btn-primary btn-lg"
+		href="#">Search</a>
 
 </form>
 
-<label for="search">Filter:
-	<input
-			id="label"
-			type="text"
-			class="form-control"/>
-</label><br><br>
+<img
+		id="loading"
+		style="display: none"
+		src="<?=LINK?>static/img/loading.gif"
+		alt="Loading...">
 
-<div id="tab"></div>
+<?php
+if($_SERVER['QUERY_STRING']!=''){
+
+	if($_GET['track_id'] != '' || $_GET['institution']!=='')
+		echo '<script>$(\'#controls\').hide()</script>';
+	else {?>
+		<label for="search" id="filter">Filter:
+			<input
+					type="text"
+					class="form-control"/>
+		</label><br><br><?php
+	} ?>
+
+	<div id="tab">
+		<?=file_get_contents(LINK.'components/get_institution.php?'.$_SERVER['QUERY_STRING']);?>
+	</div> <?php
+
+} ?>
 
 <script>
-	const link = '<?=LINK.'stats/'?>';
+	const target_link = '<?=LINK.'stats/'?>';
 </script>
 
 <?php footer();
