@@ -69,17 +69,15 @@ $version_2 = getVersion('version_2', '6.9.99');
 
 
 $hide_invalid_institutions_query = "
-	AND `ti2`.`value` != ''
-	AND `ti2`.`value` != '\n'
-	AND `ti2`.`value` != ' '
-	AND `ti2`.`value` != '.'
-	AND `ti2`.`value` != '?'
-	AND `ti2`.`value` != '-'
-	AND `ti2`.`value` IS NOT NULL
+	AND `ti_inst`.`value` != ''
+	AND `ti_inst`.`value` != '\n'
+	AND `ti_inst`.`value` != ' '
+	AND `ti_inst`.`value` != '.'
+	AND `ti_inst`.`value` != '?'
+	AND `ti_inst`.`value` != '-'
+	AND `ti_inst`.`value` IS NOT NULL
 ";
 
-
-// 'date_1','date_2','version_1','version_2','isa','institution','track_id'
 
 if($_GET['track_id']!='') {
 
@@ -231,337 +229,122 @@ if($_GET['track_id']!='') {
 
 }
 
-//elseif($_GET['institution']!='') {
-//
-//	$isa = $_GET['isa'];
-//	$institution_name = $_GET['institution'];
-//	echo '<h2>Select a Collection</h2>
-//		<h4>Note:<br>
-//		Each entry is in the form of: [ISA number] Collection name (Discipline name): Date Last accessed.<br>
-//		The entries are sorted by most recent collection accessed.</h4>';
-//
-//	$institution_name = str_replace('%20', '', $institution_name);
-//	$institution_name = str_replace("\\", '', $institution_name);
-//	$institution_name = str_replace("'s", "\\'s", $institution_name);
-//
-//	if($institution_name == '-null-')
-//		$institution_name = 'is null';
-//	elseif($institution_name == '-blank-')
-//		$institution_name = "= ''";
-//	elseif($institution_name == '-new-line-')
-//		$institution_name = "= '\n'";
-//	elseif($institution_name == '-dash-')
-//		$institution_name = "= '-'";
-//	elseif($institution_name == '-space-')
-//		$institution_name = "= ' '";
-//	else
-//		$institution_name = "= '$institution_name'";
-//
-//	$query2 = "
-//		SELECT   `ti`.`value`                                                                               AS 'Disc name',
-//		         `ti3`.`value`                                                                              AS 'Col name',
-//		         SUBSTRING_INDEX( GROUP_CONCAT( `ti`.`trackid` ORDER BY `timestampmodified` DESC ), ',', 1) AS 'tid',
-//		         MAX(`t`.`timestampmodified`)                                                               AS 'time'
-//		FROM     `trackitem` `ti`,
-//		         `trackitem` `ti2`,
-//		         `trackitem` `ti3`,
-//		         `trackitem` `ti5`,
-//		         `track` `t`,
-//		         (
-//		                  SELECT   MAX(`ti`.`trackid`) AS 'maxtid',
-//		                           COUNT(*)
-//		                  FROM     `trackitem` `ti`,
-//		                           `track` `t`,
-//		                           `trackitem` `ti2`,
-//		                           `trackitem` `ti3`
-//		                  WHERE    `t`.`trackid` = `ti`.`trackid`
-//		                  AND      `ti`.`trackid` = `ti2`.`trackid`
-//		                  AND      `ti`.`trackid` = `ti3`.`trackid`
-//		                  AND      NOT ((
-//		                                             `t`.`ip` <= '129.237.201.999'
-//		                                    AND      `t`.`ip` >= '129.237.201.0')
-//		                           OR       (
-//		                                             `t`.`ip` <= '129.237.229.999'
-//		                                    AND      `t`.`ip` >= '129.237.229.0'))
-//		                  AND      `t`.`timestampmodified` >= '" . $date_1 . "'
-//		                  AND      `t`.`timestampmodified` <= '" . $date_2 . "'
-//		                  AND      `ti3`.`name` = 'app_version'
-//		                  AND      `ti3`.`value` >= '" . $version_1 . "'
-//		                  AND      `ti3`.`value` <= '" . $version_2 . "'
-//		                  AND      `ti`.`name` = 'user_name'
-//		                  AND      `ti`.`value` NOT IN ('rods',
-//		                                            'tlammer')
-//		                  GROUP BY `ti2`.`trackid`) `ti6`
-//		WHERE    `t`.`trackid` = `ti`.`trackid`
-//		AND      `ti2`.`trackid` = `ti`.`trackid`
-//		AND      `ti3`.`trackid` = `ti`.`trackid`
-//		AND      `ti5`.`trackid` = `ti`.`trackid`
-//		AND      `ti6`.`maxtid` = `ti`.`trackid`
-//		AND      `ti`.`name` = 'Discipline_name'
-//		AND      `ti2`.`name` = 'Institution_name'
-//		AND      `ti3`.`name` = 'Collection_name'
-//		AND      `ti5`.`name` = 'Collection_number'
-//		AND      `ti2`.`value` $institution_name
-//		".$hide_invalid_institutions_query."
-//		GROUP BY ti5.value
-//		ORDER BY max(timestampmodified) DESC";
-//
-//	echo '<input id="query" type="hidden" value="' . $query2 . '">';
-//
-//	$collections = [];
-//
-//
-//	$info2 = $mysqli->query($query2);
-//
-//	while($results2 = $info2->fetch_row()){
-//
-//		$disName = $results2[0];
-//		$collName = $results2[1];
-//
-//		if(array_key_exists(4, $results2)){
-//			$isa_number = $results2[2];
-//			$track_id = $results2[3];
-//			$date = $results2[4];
-//			$collections[$date . $track_id] = '<a target="_blank" href="?track_id=' . $track_id . '">['.$isa_number.'] '.$collName.' ('.$disName.'): '.$date.'</a><br>';
-//		}
-//
-//		else {
-//			$track_id = $results2[2];
-//			$date = $results2[3];
-//			$collections[$date . $track_id] = '<a target="_blank" href="?track_id=' . $track_id . '">'.$collName.' ('.$disName.'): '.$date.'</a><br>';
-//		}
-//
-//	}
-//
-//	$info2->close();
-//
-//
-//	krsort($collections);
-//	foreach($collections as $value)
-//		echo $value . "\n";
-//
-//}
-
 else {
 	$isa = $_GET['isa']; ?>
 
 	<h2>Select an Institution:</h2><?php
 
-	if($isa == 'both')
-//		$query = "
-//			SELECT `ti2`.`value`                AS 'institution_name',
-//			       `ti`.`value`                 AS 'discipline_name',
-//			       `ti3`.`value`                AS 'collection_name',
-//			       `ti7`.`value`                AS 'co_count',
-//			       SUBSTRING_INDEX(GROUP_CONCAT(`ti`.`trackid` ORDER BY `timestampmodified` DESC),
-//			       ',', 1
-//			       )                        AS 'track_id',
-//			       MAX(`t`.`timestampmodified`) AS 'date'
-//			FROM   `trackitem` `ti`,
-//			       `trackitem` `ti2`,
-//			       `trackitem` `ti3`,
-//			       `trackitem` `ti5`,
-//			       `trackitem` `ti7`,
-//			       `track` `t`,
-//			       (SELECT MAX(`ti`.`trackid`) AS 'maxtid',
-//			               COUNT(*)
-//			        FROM   `trackitem` `ti`,
-//			               `track` `t`,
-//			               `trackitem` `ti2`,
-//			               `trackitem` `ti3`
-//			        WHERE  `t`.`trackid` = `ti`.`trackid`
-//			               AND `ti`.`trackid` = `ti2`.`trackid`
-//			               AND `ti`.`trackid` = `ti3`.`trackid`
-//			               AND NOT ( ( `t`.`ip` <= '129.237.201.999'
-//			                           AND `t`.`ip` >= '129.237.201.0' )
-//			                          OR ( `t`.`ip` <= '129.237.229.999'
-//			                               AND `t`.`ip` >= '129.237.229.0' ) )
-//			               AND `t`.`timestampmodified` >= '" . $date_1 . "'
-//			               AND `t`.`timestampmodified` <= '" . $date_2 . "'
-//			               AND `ti3`.`name` = 'app_version'
-//			               AND `ti3`.`value` >= '" . $version_1 . "'
-//			               AND `ti3`.`value` <= '" . $version_2 . "'
-//			               AND `ti`.`name` = 'user_name'
-//			               AND `ti`.`value` NOT IN ( 'rods', 'tlammer' )
-//			        GROUP  BY `ti2`.`trackid`) `ti6`
-//			WHERE  `t`.`trackid` = `ti`.`trackid`
-//			       AND `ti2`.`trackid` = `ti`.`trackid`
-//			       AND `ti3`.`trackid` = `ti`.`trackid`
-//			       AND `ti5`.`trackid` = `ti`.`trackid`
-//			       AND `ti6`.`maxtid` = `ti`.`trackid`
-//	               AND `ti7`.`name` = 'num_co'
-//			       AND `ti`.`name` = 'Discipline_name'
-//			       AND `ti2`.`name` = 'Institution_name'
-//			       AND `ti3`.`name` = 'Collection_name'
-//			       AND `ti5`.`name` = 'Collection_number'
-//			       ".$hide_invalid_institutions_query."
-//			GROUP  BY `ti5`.`value`
-//			ORDER  BY MAX(`timestampmodified`) DESC";
-
+	if($isa == 'true')
 		$query = "
-			SELECT `ti2`.`value`                AS 'institution_name',
-			       `ti`.`value`                 AS 'discipline_name',
-			       `ti3`.`value`                AS 'collection_name',
-			       SUBSTRING_INDEX(GROUP_CONCAT(`ti`.`trackid` ORDER BY `timestampmodified` DESC),
-			       ',', 1
-			       )                        AS 'track_id',
-			       MAX(`t`.`timestampmodified`) AS 'date'
-			FROM   `trackitem` `ti`,
-			       `trackitem` `ti2`,
-			       `trackitem` `ti3`,
-			       `trackitem` `ti5`,
-			       `track` `t`,
-			       (SELECT MAX(`ti`.`trackid`) AS 'maxtid',
-			               COUNT(*)
-			        FROM   `trackitem` `ti`,
-			               `track` `t`,
-			               `trackitem` `ti2`,
-			               `trackitem` `ti3`
-			        WHERE  `t`.`trackid` = `ti`.`trackid`
-			               AND `ti`.`trackid` = `ti2`.`trackid`
-			               AND `ti`.`trackid` = `ti3`.`trackid`
-			               AND NOT ( ( `t`.`ip` <= '129.237.201.999'
-			                           AND `t`.`ip` >= '129.237.201.0' )
-			                          OR ( `t`.`ip` <= '129.237.229.999'
-			                               AND `t`.`ip` >= '129.237.229.0' ) )
-			               AND `t`.`timestampmodified` >= '" . $date_1 . "'
-			               AND `t`.`timestampmodified` <= '" . $date_2 . "'
-			               AND `ti3`.`name` = 'app_version'
-			               AND `ti3`.`value` >= '" . $version_1 . "'
-			               AND `ti3`.`value` <= '" . $version_2 . "'
-			               AND `ti`.`name` = 'user_name'
-			               AND `ti`.`value` NOT IN ( 'rods', 'tlammer' )
-			        GROUP  BY `ti2`.`trackid`) `ti6`
-			WHERE  `t`.`trackid` = `ti`.`trackid`
-			       AND `ti2`.`trackid` = `ti`.`trackid`
-			       AND `ti3`.`trackid` = `ti`.`trackid`
-			       AND `ti5`.`trackid` = `ti`.`trackid`
-			       AND `ti6`.`maxtid` = `ti`.`trackid`
-			       AND `ti`.`name` = 'Discipline_name'
-			       AND `ti2`.`name` = 'Institution_name'
-			       AND `ti3`.`name` = 'Collection_name'
-			       AND `ti5`.`name` = 'Collection_number'
-			       ".$hide_invalid_institutions_query."
-			GROUP  BY `ti5`.`value`
-			ORDER  BY MAX(`timestampmodified`) DESC";
+SELECT   `ti_inst`.`value`                                                                             AS 'institution_name',
+         `ti_disc`.`value`                                                                             AS 'discipline_name',
+         `ti_coll`.`value`                                                                             AS 'collection_name',
+         `ti_isa`.`value`                                                                              AS 'isa_number',
+         `ti_co`.`countamt`                                                                            AS 'co_count',
+         SUBSTRING_INDEX(GROUP_CONCAT(`ti_disc`.`trackid` ORDER BY `timestampmodified` DESC), ',', 1 ) AS 'track_id',
+         MAX(`t`.`timestampmodified`)                                                                  AS 'date'
+FROM     `trackitem` `ti_disc`, 
+         `trackitem` `ti_inst`, 
+         `trackitem` `ti_coll`, 
+         `trackitem` `ti_isa`, 
+         `trackitem` `ti_co`, 
+         `track` `t`, 
+         ( 
+                  SELECT   MAX(`ti_disc`.`trackid`) AS 'maxtid' 
+                  FROM     `trackitem` `ti_disc`, 
+                           `trackitem` `ti_inst`, 
+                           `trackitem` `ti_coll`, 
+                           `track` `t` 
+                  WHERE    `t`.`trackid` = `ti_disc`.`trackid` 
+	                  AND  `ti_inst`.`trackid` = `ti_disc`.`trackid` 
+	                  AND  `ti_coll`.`trackid` = `ti_disc`.`trackid` 
+	                  AND  `ti_disc`.`name` = 'ISA_number' 
+	                  AND      NOT ( ( 
+	                                             `t`.`ip` <= '129.237.201.999' 
+	                                    AND      `t`.`ip` >= '129.237.201.0' ) 
+	                           OR       ( 
+	                                             `t`.`ip` <= '129.237.229.999' 
+	                                    AND      `t`.`ip` >= '129.237.229.0' ) ) 
+	                  AND  `t`.`timestampmodified` >= '" . $date_1 . "' 
+	                  AND  `t`.`timestampmodified` <= '" . $date_2 . "' 
+	                  AND  `ti_disc`.`value` != '' 
+	                  AND  `ti_inst`.`name` = 'app_version' 
+	                  AND  `ti_inst`.`value` >= '" . $version_1 . "' 
+	                  AND  `ti_inst`.`value` <= '" . $version_2 . "' 
+	                  AND  `ti_coll`.`name` = 'user_name' 
+	                  AND  `ti_coll`.`value` NOT IN ( 'rods', 
+	                                                     'tlammer' ) 
+                  GROUP BY `ti_disc`.`value`) `ti6` 
+WHERE    `t`.`trackid` = `ti_disc`.`trackid` 
+	AND  `ti_inst`.`trackid` = `ti_disc`.`trackid` 
+	AND  `ti_coll`.`trackid` = `ti_disc`.`trackid` 
+	AND  `ti_isa`.`trackid` = `ti_disc`.`trackid` 
+	AND  `ti6`.`maxtid` = `ti_disc`.`trackid` 
+	AND  `ti_co`.`trackid` = `ti_disc`.`trackid` 
+	AND  `ti_co`.`name` = 'num_co' 
+	AND  `ti_disc`.`name` = 'Discipline_name' 
+	AND  `ti_inst`.`name` = 'Institution_name' 
+	AND  `ti_coll`.`name` = 'Collection_name' 
+	AND  `ti_isa`.`name` = 'ISA_number' 
+	AND  `ti_isa`.`value` != '' ".$hide_invalid_institutions_query." 
+GROUP BY `ti_isa`.`value` 
+ORDER BY max(`timestampmodified`) DESC";
 
-	elseif($isa == 'ISA')
+	else
 		$query = "
-			SELECT `ti2`.`value`                AS 'institution_name', 
-			       `ti`.`value`                 AS 'discipline_name', 
-			       `ti3`.`value`                AS 'collection_name', 
-			       `ti4`.`value`                AS 'isa', 
-			       `ti7`.`value`                AS 'co_count', 
-			       SUBSTRING_INDEX(GROUP_CONCAT(`ti`.`trackid` ORDER BY `timestampmodified` DESC), 
-			       ',', 1 
-			       )                        AS 'track_id', 
-			       MAX(`t`.`timestampmodified`) AS 'date' 
-			FROM   `trackitem` `ti`, 
-			       `trackitem` `ti2`, 
-			       `trackitem` `ti3`, 
-			       `trackitem` `ti4`, 
-			       `trackitem` `ti7`, 
-			       `track` `t`, 
-			       (SELECT MAX(`ti`.`trackid`) AS 'maxtid' 
-			        FROM   `trackitem` `ti`, 
-			               `trackitem` `ti2`, 
-			               `trackitem` `ti3`, 
-			               `track` `t` 
-			        WHERE  `t`.`trackid` = `ti`.`trackid` 
-			               AND `ti2`.`trackid` = `ti`.`trackid`
-			               AND `ti3`.`trackid` = `ti`.`trackid` 
-			               AND `ti`.`name` = 'ISA_number' 
-			               AND NOT ( ( `t`.`ip` <= '129.237.201.999' 
-			                           AND `t`.`ip` >= '129.237.201.0' ) 
-			                          OR ( `t`.`ip` <= '129.237.229.999' 
-			                               AND `t`.`ip` >= '129.237.229.0' ) ) 
-			               AND `t`.`timestampmodified` >= '" . $date_1 . "' 
-			               AND `t`.`timestampmodified` <= '" . $date_2 . "' 
-			               AND `ti`.`value` != '' 
-			               AND `ti2`.`name` = 'app_version' 
-			               AND `ti3`.`value` >= '" . $version_1 . "' 
-			               AND `ti3`.`value` <= '" . $version_2 . "' 
-			               AND `ti3`.`name` = 'user_name' 
-			               AND `ti3`.`value` NOT IN ( 'rods', 'tlammer' )  
-			        GROUP  BY `ti`.`value`) `ti6` 
-			WHERE  `t`.`trackid` = `ti`.`trackid` 
-			       AND `ti2`.`trackid` = `ti`.`trackid` 
-			       AND `ti3`.`trackid` = `ti`.`trackid` 
-			       AND `ti4`.`trackid` = `ti`.`trackid` 
-			       AND `ti6`.`maxtid` = `ti`.`trackid` 
-			       AND `ti`.`name` = 'Discipline_name' 
-			       AND `ti2`.`name` = 'Institution_name' 
-			       AND `ti3`.`name` = 'Collection_name' 
-			       AND `ti4`.`name` = 'ISA_number' 
-	               AND `ti7`.`name` = 'num_co'
-			       AND `ti4`.`value` != ''  
-			       ".$hide_invalid_institutions_query."
-			GROUP  BY `ti4`.`value` 
-			ORDER  BY MAX(`timestampmodified`) DESC";
-
-	elseif($isa == 'not')
-		$query = "
-			SELECT `ti2`.`value`                AS 'institution_name', 
-			       `ti`.`value`                 AS 'discipline_name', 
-			       `ti3`.`value`                AS 'collection_name', 
-			       `ti7`.`value`                AS 'co_count', 
-			       SUBSTRING_INDEX(GROUP_CONCAT(`ti`.`trackid` ORDER BY `timestampmodified` DESC), 
-			       ',', 1 
-			       )                        AS 'track_id', 
-			       MAX(`t`.`timestampmodified`) AS 'date' 
-			FROM   `trackitem` `ti`, 
-			       `trackitem` `ti2`, 
-			       `trackitem` `ti3`, 
-			       `trackitem` `ti5`, 
-			       `trackitem` `ti7`, 
-			       `track` `t`, 
-			       (SELECT MAX(`ti`.`trackid`) AS 'maxtid' 
-			        FROM   `trackitem` `ti`, 
-			               `track` `t`, 
-			               `trackitem` `ti3`, 
-			               ((SELECT DISTINCT `trackid` 
-			                 FROM   `trackitem` 
-			                 WHERE  `trackid` NOT IN (SELECT `trackid` 
-			                                        FROM   `trackitem` 
-			                                        WHERE  `name` = 'ISA_number')) 
-			                UNION 
-			                (SELECT DISTINCT `trackid` 
-			                 FROM   `trackitem`
-			                 WHERE  `name` = 'ISA_number' 
-			                        AND `value` = '')) `ti2` 
-			        WHERE  `t`.`trackid` = `ti`.`trackid` 
-			               AND `ti`.`trackid` = `ti2`.`trackid` 
-			               AND `ti`.`trackid` = `ti3`.`trackid` 
-			               AND NOT ( ( `t`.`ip` <= '129.237.201.999' 
-			                           AND `t`.`ip` >= '129.237.201.0' ) 
-			                          OR ( `t`.`ip` <= '129.237.229.999' 
-			                               AND `t`.`ip` >= '129.237.229.0' ) ) 
-			               AND `t`.`timestampmodified` >= '" . $date_1 . "' 
-			               AND `t`.`timestampmodified` <= '" . $date_2 . "' 
-			               AND `ti3`.`name` = 'app_version' 
-			               AND `ti3`.`value` >= '" . $version_1 . "' 
-			               AND `ti3`.`value` <= '" . $version_2 . "' 
-			               AND `ti`.`name` = 'user_name' 
-			               AND `ti`.`value` NOT IN ( 'rods', 'tlammer' ) 
-			        GROUP  BY `ti2`.`trackid`) `ti6` 
-			WHERE  `t`.`trackid` = `ti`.`trackid` 
-			       AND `ti`.`trackid` = `ti2`.`trackid` 
-			       AND `ti2`.`trackid` = `ti3`.`trackid` 
-			       AND `ti3`.`trackid` = `ti5`.`trackid` 
-			       AND `ti5`.`trackid` = `ti6`.`maxtid` 
-			       AND `ti`.`name` = 'Discipline_name' 
-			       AND `ti2`.`name` = 'Institution_name' 
-			       AND `ti3`.`name` = 'Collection_name' 
-			       AND `ti5`.`name` = 'Collection_number'  
-	               AND `ti7`.`name` = 'num_co'
-			       ".$hide_invalid_institutions_query."
-			GROUP  BY `ti5`.`value` 
-			ORDER  BY MAX(`timestampmodified`) DESC";
-
+SELECT   `ti_inst`.`value`                                                                             AS 'institution_name',
+         `ti_disc`.`value`                                                                             AS 'discipline_name',
+         `ti_coll`.`value`                                                                             AS 'collection_name',
+         `ti_co`.`countamt`                                                                            AS 'co_count',
+         SUBSTRING_INDEX(GROUP_CONCAT(`ti_disc`.`trackid` ORDER BY `timestampmodified` DESC), ',', 1 ) AS 'track_id',
+         MAX(`t`.`timestampmodified`)                                                                  AS 'date'
+FROM     `trackitem` `ti_disc`, 
+         `trackitem` `ti_inst`, 
+         `trackitem` `ti_coll`, 
+         `trackitem` `ti_coln`, 
+         `trackitem` `ti_co`, 
+         `track` `t`, 
+         ( 
+                  SELECT   MAX(`ti_disc`.`trackid`) AS 'maxtid', 
+                           COUNT(*) 
+                  FROM     `trackitem` `ti_disc`, 
+                           `track` `t`, 
+                           `trackitem` `ti_inst`, 
+                           `trackitem` `ti_coll` 
+                  WHERE    `t`.`trackid` = `ti_disc`.`trackid` 
+	                  AND  `ti_inst`.`trackid` = `ti_disc`.`trackid` 
+	                  AND  `ti_coll`.`trackid` = `ti_disc`.`trackid` 
+	                  AND  NOT ( ( 
+	                                             `t`.`ip` <= '129.237.201.999' 
+	                                    AND      `t`.`ip` >= '129.237.201.0' ) 
+	                           OR       ( 
+	                                             `t`.`ip` <= '129.237.229.999' 
+	                                    AND      `t`.`ip` >= '129.237.229.0' ) ) 
+	                  AND  `t`.`timestampmodified` >= '" . $date_1 . "' 
+	                  AND  `t`.`timestampmodified` <= '" . $date_2 . "' 
+	                  AND  `ti_coll`.`name` = 'app_version' 
+	                  AND  `ti_coll`.`value` >= '" . $version_1 . "' 
+	                  AND  `ti_coll`.`value` <= '" . $version_2 . "' 
+	                  AND  `ti_disc`.`name` = 'user_name' 
+	                  AND  `ti_disc`.`value` NOT IN ( 'rods', 
+	                                                     'tlammer' ) 
+                  GROUP BY `ti_inst`.`trackid`) `ti6` 
+WHERE    `t`.`trackid` = `ti_disc`.`trackid` 
+	AND  `ti_inst`.`trackid` = `ti_disc`.`trackid` 
+	AND  `ti_coll`.`trackid` = `ti_disc`.`trackid` 
+	AND  `ti_coln`.`trackid` = `ti_disc`.`trackid` 
+	AND  `ti6`.`maxtid` = `ti_disc`.`trackid` 
+	AND  `ti_co`.`trackid` = `ti_disc`.`trackid` 
+	AND  `ti_co`.`name` = 'num_co' 
+	AND  `ti_disc`.`name` = 'Discipline_name' 
+	AND  `ti_inst`.`name` = 'Institution_name' 
+	AND  `ti_coll`.`name` = 'Collection_name' 
+	AND  `ti_coln`.`name` = 'Collection_number' ".$hide_invalid_institutions_query." 
+GROUP BY `ti_coln`.`value` 
+ORDER BY max(`timestampmodified`) DESC";
 
 	echo '<input id="query" type="hidden" value="' . $query . '">';
 
-	//exit();
 	$info = $mysqli->query($query);
 
 	if($info === FALSE)
@@ -579,20 +362,25 @@ else {
 	while($results = $info->fetch_assoc()){
 
 		$institution_name = $results['institution_name'];
+		$discipline_name = $results['discipline_name'];
+		$track_id = $results['track_id'];
+		$collection_name = $results['collection_name'];
+		$date = $results['date'];
+		$co_count = $results['co_count'];
 
 		if(!array_key_exists($institution_name,$institutions))
 			$institutions[$institution_name] = [];
 
-		$discipline_name = $results['discipline_name'];
 		if(!array_key_exists($discipline_name,$institutions[$institution_name]))
 			$institutions[$institution_name][$discipline_name] = [];
 
-		$isa_number = '';
-		if(array_key_exists('isa_number',$results))
-			$isa_number = '['.$results['isa_number'].']';
+		$result = [];
 
-		$collection_name = $results['collection_name'];
-		$institutions[$institution_name][$discipline_name][$collection_name] = [$results['track_id'],$isa_number.' '.$results['collection_name'].' ('.$results['discipline_name'] . '): ' . $results['date'] . ' ['.$results['co_count'].']'];
+		$result['Date Accessed'] = $date;
+		if(array_key_exists('isa_number',$results))
+			$result['ISA Number'] = $results['isa_number'];
+
+		$institutions[$institution_name][$discipline_name][] = [$track_id,$collection_name,$co_count,$result];
 
 	}
 
@@ -614,8 +402,19 @@ else {
 						<ul>';
 
 							ksort($collections);
-							foreach($collections as $collection_name => $data)
-								echo '<li><a target="_blank" href="?track_id=' . $data[0] . '">'.$data[1].'</a></li>';
+							foreach($collections as $data){
+
+								echo '<li>
+									<a target="_blank" href="?track_id=' . $data[0] . '">' . $data[1] . '</a> [' . $data[2] . ']<br>
+									<ul>';
+
+										foreacH($data[3] as $key => $value)
+											echo '<li>'.$key.': '.$value.'</li>';
+
+									echo '</ul>
+								</li>';
+
+							}
 
 						echo '</ul>
 					</li>';

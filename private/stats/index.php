@@ -9,19 +9,26 @@ const JQUERY = TRUE;
 require_once('../components/header.php');
 
 
-//GET SPECIFY VERSIONS
+//GET SPECIFY VERSIONS (and cache them)
 $specify_versions = [];
 
-$query_2 = "SELECT DISTINCT `ti`.`value` AS 'specify_version'
-                           FROM `trackitem` `ti`
-			   WHERE `ti`.`name` = 'app_version'
-			   AND `ti`.`value` LIKE '6%'
-			   ORDER BY `ti`.`value` DESC";
+if(array_key_exists('versions',$_COOKIE))
+	$specify_versions = explode('A',$_COOKIE['versions']);
+else {
 
-$info_2 = $mysqli->query($query_2);
-while($results_2 = $info_2->fetch_row())
-	$specify_versions[] = $results_2[0];
-$info_2->close();
+	$query_2 = "SELECT DISTINCT `ti`.`value` AS 'specify_version'
+	                           FROM `trackitem` `ti`
+				   WHERE `ti`.`name` = 'app_version'
+				   AND `ti`.`value` LIKE '6%'
+				   ORDER BY `ti`.`value` DESC";
+
+	$info_2 = $mysqli->query($query_2);
+	while($results_2 = $info_2->fetch_row())
+		$specify_versions[] = $results_2[0];
+	$info_2->close();
+
+	setcookie('versions',implode('A',$specify_versions),time()+86400*30,'/');
+}
 
 
 //GET PARAMETERS
@@ -91,13 +98,11 @@ foreach($possible_parameters as $parameter)
 		} ?>
 	</select><br><br>
 
-	<label for="isa">ISA:</label>
-	<select id="isa"
-	        class="form-control">
-		<option value="both" <?php if($_GET['isa'] == 'both') echo 'selected'?>>All institutions</option>
-		<option value="ISA" <?php if($_GET['isa'] == 'ISA') echo 'selected'?>>Institutions with ISA</option>
-		<option value="not" <?php if($_GET['isa'] == 'not') echo 'selected'?>>Institutions without ISA</option>
-	</select><br><br>
+
+	<label class="form-check">
+		<input type="checkbox" class="form-check-input" id="isa" <?=($_GET['isa']==='true')?'checked':''?>>
+		Only show institutions that have an ISA Number
+	</label><br>
 
 	<a
 		id="submit"
@@ -112,7 +117,7 @@ foreach($possible_parameters as $parameter)
 		src="<?=LINK?>static/img/loading.gif"
 		alt="Loading...">
 
-<?php
+<?php exit();
 if($_SERVER['QUERY_STRING']!=''){
 
 	if($_GET['track_id'] != '' || $_GET['institution']!=='')

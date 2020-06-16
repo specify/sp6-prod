@@ -22,7 +22,7 @@ $(function () {
 		const show_last_days_val = show_last_days.val();
 		const version1_val = version1.val();
 		const version2_val = version2.val();
-		const isa_val = isa.val();
+		const isa_val = isa.prop('checked')===true?'true':'false';
 
 
 		if(isNaN(date1_val))
