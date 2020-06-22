@@ -1,5 +1,7 @@
 <?php
 
+//TODO: use min files when under production
+
 function require_file($require){
 
 	require_once(dirname(__FILE__).'/'.$require);
@@ -12,14 +14,17 @@ function footer(){
 
 }
 
-require_file('../config.php');
-
-if(LOG_IPS)
-	require_file('ip_access.php');
+require_file('../config/required.php');
+require_file('../config/optional.php');
 
 
-error_reporting(E_ALL | E_STRICT);
-ini_set('display_errors', 1);
+if(!DEVELOPMENT || SHOW_ERRORS_IN_PRODUCTION){
+	error_reporting(E_ALL | E_STRICT);
+	ini_set('display_errors', 1);
+}
+
+if(!file_exists(WORKING_DIRECTORY))
+	mkdir(WORKING_DIRECTORY,0755,TRUE);
 
 if(defined('MEMORY_LIMIT'))
 	ini_set('memory_limit', MEMORY_LIMIT);
@@ -29,11 +34,10 @@ if(defined('TIMEZONE'))
 else
 	date_default_timezone_set('America/Chicago');
 
-if(defined('DATABASE')){
+if(defined('DATABASE'))
 	require_file('mysql.php');
-}
 
-if(!defined('NO_HEAD')){
+if(!defined('NO_HEAD') || NO_HEAD!==TRUE){
 
 ?><!-- Developed by Specify Software (https://www.sustain.specifysoftware.org/) -->
 <!DOCTYPE html>
@@ -67,7 +71,10 @@ if(!defined('NO_HEAD')){
 			rel="icon"
 			type="image/png"
 			sizes="150x150"
-			href="https://www.sustain.specifysoftware.org/wp-content/uploads/2017/06/sp_project_square-1-150x150.png"> <?php
+			href="https://www.sustain.specifysoftware.org/wp-content/uploads/2017/06/sp_project_square-1-150x150.png">
+	<link
+				rel="stylesheet"
+				href="<?=LINK?>static/css/main.css"> <?php
 
 	if(defined('CSS')) { ?>
 		<link

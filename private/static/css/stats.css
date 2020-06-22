@@ -1,8 +1,8 @@
-body {
-	padding: 20px;
-}
-
 input, select {
 	display: inline !important;
 	width: auto !important;
+}
+
+.list_condensed {
+	display: none;
 }

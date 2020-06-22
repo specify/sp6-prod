@@ -23,7 +23,7 @@ $columns = ['ExceptionID','TimestampCreated','TaskName','Title','Bug','Comments'
 $empty_columns = $columns;
 
 $update_cache = array_key_exists('update_cache',$_GET) && $_GET['update_cache'] == 'true';
-$cache = new Cache_query($query,EXCEPTIONS_CACHE_DIRECTORY,EXCEPTIONS_CACHE_DURATION, $columns, $update_cache);
+$cache = new Cache_query($query,WORKING_DIRECTORY.'exceptions/',CACHE_DURATION, $columns, $update_cache);
 $data = $cache->get_result();
 
 

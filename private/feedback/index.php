@@ -13,7 +13,7 @@ $columns = ['FeedbackID','TimestampCreated','Subject','Component','Issue','Comme
 $empty_columns = $columns;
 
 $update_cache = array_key_exists('update_cache',$_GET) && $_GET['update_cache'] == 'true';
-$cache = new Cache_query($query,FEEDBACK_CACHE_DIRECTORY,FEEDBACK_CACHE_DURATION, $columns, $update_cache);
+$cache = new Cache_query($query,WORKING_DIRECTORY.'feedback/',CACHE_DURATION, $columns, $update_cache);
 $data = $cache->get_result();
 
 $number_of_results = count($data);

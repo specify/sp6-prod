@@ -1,87 +1,131 @@
-$(function () {
+$( function () {
 
-	const controls = $( "#controls" );
-	const date1 = controls.find( "#datepicker1" );
-	const date2 = controls.find( "#datepicker2" );
-	const version1 = controls.find( "#versions1" );
-	const version2 = controls.find( "#versions2" );
-	const show_last_days = controls.find( "#show_last_days" );
-	const isa = controls.find( "#isa" );
-	const submit = $( "#submit" );
-	const tab = $('#tab');
-	const filter_label = $('#filter');
-	const filter = filter_label.find('input');
-	const loading = $('#loading');
-	let search_targets = null;
+	const controls = $( '#controls' );
+	const date1 = controls.find( '#datepicker1' );
+	const date2 = controls.find( '#datepicker2' );
+	const show_last_days = controls.find( '#show_last_days' );
+	const filter = $( '#filter' );
+	const stats = $( '#stats' );
+	const refresh_data_link = $( '#refresh_data_link' );
 
-
-	submit.on( "click", function(){
-
-		let date1_val = date1[0].valueAsNumber/1000;
-		let date2_val = date2[0].valueAsNumber/1000;
-		const show_last_days_val = show_last_days.val();
-		const version1_val = version1.val();
-		const version2_val = version2.val();
-		const isa_val = isa.prop('checked')===true?'true':'false';
+	let institutions_count = 0;
+	let disciplines_count = 0;
+	let collections_count = 0;
+	let records_count = 0;
 
 
-		if(isNaN(date1_val))
+	//Redirect on date range change
+	function redirect() {
+
+		date1_val = date1[ 0 ].valueAsNumber / 1000;
+		date2_val = date2[ 0 ].valueAsNumber / 1000;
+		show_last_days_val = show_last_days.val();
+
+
+		if ( isNaN( date1_val ) )
 			date1_val = '';
 
-		if(isNaN(date2_val))
+		if ( isNaN( date2_val ) )
 			date2_val = '';
 
-		if(date1_val>date2_val)
-			[date1_val,date2_val] = [date2_val,date1_val]
+		if ( date1_val > date2_val )
+			[ date1_val, date2_val ] = [ date2_val, date1_val ];
 
-		if(version1_val>version1_val)
-			[version1_val,version2_val] = [version2_val,version1_val]
+		window.location.href = link + '?' + get_dates() + get_search();
 
+	}
 
-		const link = target_link+
-				'?date_1='+date1_val+
-				'&date_2='+date2_val+
-				'&version_1='+version1_val+
-				'&version_2='+version2_val+
-				'&show_last_days='+show_last_days_val+
-				'&isa='+isa_val;
-
-		submit.attr('href',link);
-
-		loading.show();
-		filter_label.hide();
-		tab.hide();
-
-	});
+	date1.on( 'change', redirect );
+	date2.on( 'change', redirect );
+	show_last_days.on( 'change', redirect );
 
 
-	filter.bind('input',function(){
+	//Hide elements and update stats on search
+	function search() {
 
-		if(search_targets==null)
-			search_targets = $('ol > li');
+		const search_targets = $( 'ol:not(.breadcrumb) > li' );
 
-		const search_query = filter.val();
+		search_query = filter.val();
 
-		if(search_query==='')
-			search_targets.show();
-		else {
+		search_targets.show();
+		if ( search_query !== '' ){
 
-			const regex = new RegExp(search_query,"i");
+			try {
 
-			$.each(search_targets,function(key,el){
+				const regex = new RegExp( search_query, 'i' );
 
-				el = $(el);
+				$.each( search_targets, function ( key, el ) {
 
-				const text = el.text();
+					el = $( el );
 
-				if(text.match(regex)!==null)
-					el.show();
-				else
-					el.hide();
+					const text = el.text();
 
-			});
+					if ( text.match( regex ) === null )
+						el.hide();
+
+				} );
+
+			} catch(e) {}
+
 		}
 
-	});
+		const institutions = $( 'ol:not(.breadcrumb) > li:not([style="display: none;"])' );
+		institutions_count = institutions.length;
+
+		const disciplines = institutions.find( '> ul > li' );
+		disciplines_count = disciplines.length;
+
+		const collections = disciplines.find( '> ul > li' );
+		collections_count = collections.length;
+
+		const records = collections.find( '.list_condensed li' );
+		records_count = records.length;
+
+		stats.html( institutions_count + ` institutions<br>` +
+			disciplines_count + ` disciplines<br>` +
+			collections_count + ` collections<br>` +
+			records_count + ` records` );
+
+	}
+	filter.bind( 'input', search );
+	if ( filter.val() !== '' )
+		search();
+
+
+	//Construct URLs
+	function get_search() {
+		return 'search=' + search_query + '&';
+	}
+
+	function get_dates() {
+		if ( show_last_days_val !== '' )
+			return 'show_last_days=' + show_last_days_val+'&';
+		else if ( date1_val !== 0 && date2_val !== 0 )
+			return 'date_1=' + date1_val + '&date_2=' + date2_val+'&';
+		else
+			return '';
+	}
+
+	refresh_data_link.click( function () {
+		refresh_data_link.attr( 'href', link + '?' + get_dates() + get_search() + 'update_data=true' );
+	} );
+
+
+	//Un-hide timestamps
+	$( '.opener' ).click( function () {
+
+		const el = $( this );
+		const list = el.parent().find( 'ul' );
+		el.remove();
+		list.removeClass( 'list_condensed' );
+
+		return false;
+
+	} );
+
+
+	//Remove ?update_cache=true from the URL
+	let url = window.location.href;
+	window.history.pushState('', "Specify 7 Stats", link + '?' + get_dates() + get_search());
 
 } );

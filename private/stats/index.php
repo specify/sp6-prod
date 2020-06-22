@@ -1,42 +1,63 @@
 <?php
 
+global $no_head;
+
 const DATABASE = 'stats';
 const CSS = 'stats';
 const JS = 'stats';
 const JQUERY = TRUE;
-
+const TIMEZONE = 'UTC';
 
 require_once('../components/header.php');
+require_once('../components/Cache_query.php');
 
 
 //GET SPECIFY VERSIONS (and cache them)
 $specify_versions = [];
 
-if(array_key_exists('versions',$_COOKIE))
-	$specify_versions = explode('A',$_COOKIE['versions']);
-else {
+$query = "SELECT DISTINCT `ti`.`value` AS 'specify_version'
+                           FROM `trackitem` `ti`
+			   WHERE `ti`.`name` = 'app_version'
+			   AND `ti`.`value` LIKE '6%'
+			   ORDER BY `ti`.`value` DESC";
+$columns = ['version'];
+$versions_cache = new Cache_query($query,WORKING_DIRECTORY.'versions/',CACHE_DURATION, $columns,FALSE,'','A');
+$specify_versions = $versions_cache->get_result();
 
-	$query_2 = "SELECT DISTINCT `ti`.`value` AS 'specify_version'
-	                           FROM `trackitem` `ti`
-				   WHERE `ti`.`name` = 'app_version'
-				   AND `ti`.`value` LIKE '6%'
-				   ORDER BY `ti`.`value` DESC";
-
-	$info_2 = $mysqli->query($query_2);
-	while($results_2 = $info_2->fetch_row())
-		$specify_versions[] = $results_2[0];
-	$info_2->close();
-
-	setcookie('versions',implode('A',$specify_versions),time()+86400*30,'/');
-}
-
-
-//GET PARAMETERS
-
-$possible_parameters = ['date_1','date_2','version_1','version_2','isa','institution','track_id','show_last_days'];
+//INITIALIZE GET PARAMETERS
+$possible_parameters = ['date_1','date_2','show_last_days','update_cache','search_query','view'];
 foreach($possible_parameters as $parameter)
 	if(!array_key_exists($parameter,$_GET))
-		$_GET[$parameter] = ''; ?>
+		$_GET[$parameter] = '';
+
+
+$no_head = TRUE;
+require_file('../refresh_data/index.php');
+
+$date_1 = $_GET['date_1'];
+$date_2 = $_GET['date_2'];
+
+if(is_numeric($_GET['show_last_days'])){
+
+	$show_last_days = $_GET['show_last_days'];
+
+	$date_2 = $_SERVER['REQUEST_TIME'];
+	$date_1 = $date_2 - 86400 * $show_last_days;
+
+}
+
+if(!is_numeric($date_1))
+	$date_1 = 0;
+
+if(!is_numeric($date_2))
+	$date_2 = $_SERVER['REQUEST_TIME'];
+
+if($date_1>$date_2)
+	[$date_1,$date_2] = [$date_2,$date_1];
+
+
+$_GET['date_1'] = date('Y-m-d',$date_1);
+$_GET['date_2'] = date('Y-m-d',$date_2);?>
 
 
 <form class="mb-4" id="controls">
@@ -59,7 +80,7 @@ foreach($possible_parameters as $parameter)
 
 	<label>
 		OR Show last
-		<input list="browsers"  id="show_last_days" class="form-control" value="<?=$_GET['show_last_days']?>">
+		<input list="browsers"  id="show_last_days" class="form-control">
 		<datalist id="browsers">
 			<option value="15">
 			<option value="30">
@@ -70,74 +91,144 @@ foreach($possible_parameters as $parameter)
 	</label>
 	<br><br>
 
-	<label for="versions1">Specify versions between:</label>
-	<select id="versions1"
-	        class="form-control"> <?php
-		foreach($specify_versions as $value){
+	<div class="d-flex" style="align-items: flex-start">
+		<a
+			id="refresh_data_link"
+			class="btn btn-success mr-4"
+			href="#">Refresh Data</a>
 
-			$selected = '';
-			if($value==$_GET['version_1'])
-				$selected = ' selected';
-
-			echo '<option value="'.$value.'" '.$selected.'>'.$value.'</option>';
-
-		} ?>
-	</select>
-
-	<label for="versions2">and</label>
-	<select id="versions2"
-	        class="form-control"> <?php
-		foreach($specify_versions as $value){
-
-			$selected = '';
-			if($value == $_GET['version_2'])
-				$selected = ' selected';
-
-			echo '<option value="'.$value.'" '.$selected.'>'.$value.'</option>';
-
-		} ?>
-	</select><br><br>
-
-
-	<label class="form-check">
-		<input type="checkbox" class="form-check-input" id="isa" <?=($_GET['isa']==='true')?'checked':''?>>
-		Only show institutions that have an ISA Number
-	</label><br>
-
-	<a
-		id="submit"
-		class="btn btn-primary btn-lg"
-		href="#">Search</a>
-
-</form>
-
-<img
-		id="loading"
-		style="display: none"
-		src="<?=LINK?>static/img/loading.gif"
-		alt="Loading...">
-
-<?php exit();
-if($_SERVER['QUERY_STRING']!=''){
-
-	if($_GET['track_id'] != '' || $_GET['institution']!=='')
-		echo '<script>$(\'#controls\').hide()</script>';
-	else {?>
-		<label for="search" id="filter">Filter:
+		<label>
 			<input
+					id="filter"
 					type="text"
-					class="form-control"/>
-		</label><br><br><?php
+					class="form-control"
+					placeholder="Search Query"
+					value="<?=$_GET['search_query']?>">
+		</label>
+	</div>
+
+</form> <?php
+
+
+$institutions = json_decode(file_get_contents(WORKING_DIRECTORY.'data.json'),TRUE);
+
+if(count($institutions) == 0)
+	exit();
+
+//filtering and counting
+$institutions_count = 0;
+$disciplines_count = 0;
+$collections_count = 0;
+$records_count = 0;
+
+foreach($institutions as $institution_name => &$disciplines){
+
+	ksort($disciplines);
+	foreach($disciplines as $discipline_name => &$collections){
+
+		ksort($collections);
+		foreach($collections as $collection_name => &$records){
+
+			foreach($records as $key => $record)
+				if($record[0]<$date_1 || $record[0]>$date_2)
+					unset($records[$key]);
+
+			$local_records_count = count($records);
+			if($local_records_count==0)
+				unset($collections[$collection_name]);
+			else
+				$records_count += $local_records_count;
+
+		}
+
+		$local_collections_count = count($collections);
+
+		if($local_collections_count==0)
+			unset($disciplines[$discipline_name]);
+		else
+			$collections_count += $local_collections_count;
+
+	}
+
+	$local_disciplines_count = count($disciplines);
+
+	if($local_disciplines_count==0)
+		unset($institutions[$institution_name]);
+	else
+		$disciplines_count += $local_disciplines_count;
+
+	$institutions_count++;
+
+}
+
+unset($disciplines);
+unset($collections);
+unset($data); ?>
+
+
+<div class="alert alert-info" id="stats">
+	<?=$institutions_count?> institutions<br>
+	<?=$disciplines_count?> disciplines<br>
+	<?=$collections_count?> collections<br>
+	<?=$records_count?> records<br>
+</div>
+
+<ol> <?php
+
+	foreach($institutions as $institution_name => $disciplines){
+
+		echo '<li>'.$institution_name.'
+				<ul>';
+
+		foreach($disciplines as $discipline_name => $collections){
+
+			echo '
+				<li>'.$discipline_name.'
+					<ul>';
+
+			foreach($collections as $collection_name => $data){
+
+				echo '<li><a href="'.LINK.'collection/?collection_number=' . $record[2] . '">'.$collection_name.'</a>';
+				$result = '<ul class="list_condensed">';
+
+				$max_count = -1;
+				foreach($data as $record){
+
+					$result .= '<li><a target="_blank" href="'.LINK.'track/?track_id=' . $record[3] . '">' . date('Y F j D', $record[0]) . '</a> [' . $record[1] . ']</li>';
+
+					if($max_count==-1 || $max_count<$record[1])
+						$max_count = $record[1];
+
+				}
+
+				echo ' <a href="#" class="opener">['.$max_count.']</a>'.$result.'
+					</ul>
+				</li>';
+
+			}
+
+			echo '</ul>
+				</li>';
+
+		}
+
+		echo '</ul>
+	</li>';
+
 	} ?>
 
-	<div id="tab">
-		<?=file_get_contents(LINK.'components/get_institution.php?'.$_SERVER['QUERY_STRING']);?>
-	</div> <?php
-
-} ?>
+</ol>
 
 <script>
-	const target_link = '<?=LINK.'stats/'?>';
+
+	const link = '<?=LINK.'stats/'?>';
+
+	const view = '<?=$_GET['view']?>';
+	let show_last_days_val = '';
+	let search_query = '<?=$_GET['search_query']?>';
+	let date1_val = <?=intval($date_1)?>;
+	let date2_val = <?=intval($date_2)?>;
+
 </script>
 
 <?php footer();
