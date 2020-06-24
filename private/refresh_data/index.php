@@ -13,7 +13,8 @@ if(!defined('LINK')){
 	define('TIMEZONE','UTC');
 
 	require_once('../components/header.php');
-	require_once('../components/Cache_query.php');
+	require_file('../config/cache.php');
+	require_file('Cache_query.php');
 
 }
 
@@ -24,26 +25,36 @@ if (!$mysqli->set_charset('utf8'))
 $query = "
 SELECT     `ti_co`.`CountAmt`      AS `co_count`,
            `ti_inst`.`value`       AS 'institution_name',
+           `ti_insn`.`value`       AS 'institution_number',
            `ti_disc`.`value`       AS 'discipline_name',
+           `ti_disn`.`value`       AS 'discipline_number',
            `ti_coll`.`value`       AS 'collection_name',
            `ti_coln`.`value`       AS 'collection_number',
            `t`.`trackid`           AS 'track_id',
-           `t`.`TimestampCreated` AS 'timestamp'
+           `t`.`TimestampCreated`  AS 'timestamp'
 FROM       `track` `t`
 INNER JOIN `trackitem` `ti_coll`
       ON   `ti_coll`.`trackid` = `t`.`trackid`
-      AND  `ti_coll`.`name` = 'Collection_name'
+      AND  `ti_coll`.`name` = 'Collection_name'    
+INNER JOIN `trackitem` `ti_coln`
+      ON   `ti_coln`.`trackid` = `t`.`trackid`
+      AND  `ti_coln`.`name` = 'Collection_number'
 INNER JOIN `trackitem` `ti_disc`
       ON   `ti_disc`.`trackid` = `t`.`trackid`
       AND  `ti_disc`.`name` = 'Discipline_name'
+INNER JOIN `trackitem` `ti_disn`
+      ON   `ti_disn`.`trackid` = `t`.`trackid`
+      AND  `ti_disn`.`name` = 'Discipline_number'
+	  AND  `ti_disn`.`value` <> ''
 INNER JOIN `trackitem` `ti_inst`
       ON   `ti_inst`.`trackid` = `t`.`trackid`
       AND  `ti_inst`.`name` = 'Institution_name'
       AND  `ti_inst`.`value` NOT IN ('',' ','.','?','-','\n')
       AND  `ti_inst`.`value` IS NOT NULL
-INNER JOIN `trackitem` `ti_coln`
-      ON   `ti_coln`.`trackid` = `t`.`trackid`
-      AND  `ti_coln`.`name` = 'Collection_number'
+INNER JOIN `trackitem` `ti_insn`
+      ON   `ti_insn`.`trackid` = `t`.`trackid`
+      AND  `ti_insn`.`name` = 'Institution_number'
+	  AND  `ti_insn`.`value` <> ''
 INNER JOIN `trackitem` `ti_co`
       ON   `ti_co`.`trackid` = `t`.`trackid`
       AND  `ti_co`.`name` = 'num_co'
@@ -57,6 +68,7 @@ WHERE      `ti_coln`.`value` IN (
            INNER JOIN      `trackitem` `ti_coln`
                  ON        `ti_coln`.`trackid` = `t`.`trackid`
                  AND       `ti_coln`.`name` = 'Collection_number'
+                 AND       `ti_coln`.`value` <> ''
            WHERE NOT (
                 (
                            `t`.`ip` <= '129.237.201.999' AND
@@ -70,31 +82,31 @@ WHERE      `ti_coln`.`value` IN (
     )
 ORDER BY `t`.`TimestampCreated` DESC";
 
-$columns = ['co_count','institution_name','discipline_name','collection_name','collection_number','track_id','timestamp'];
+$columns = ['co_count','institution_name','institution_number','discipline_name','discipline_number','collection_name','collection_number','track_id','timestamp'];
 
 $update_cache = array_key_exists('update_cache',$_GET) && $_GET['update_cache']=='true';
 
-$cache = new Cache_query($query,WORKING_DIRECTORY.'cache/','stats.csv',CACHE_DURATION, $columns, WORKING_DIRECTORY.'cache_info.json', $update_cache);
+$cache = new Cache_query($query,'stats.csv', $columns, $update_cache);
 $data = $cache->get_result();
 $cache->get_status(null,TRUE);
 
-$target_file = WORKING_DIRECTORY.'cache/data.json';
+$target_file = WORKING_DIRECTORY.'data.json';
 if($cache->cache_was_recreated){
 
 	$institutions = [];
 
 	foreach($data as $row){
 
-		if(!array_key_exists($row['institution_name'],$institutions))
-			$institutions[$row['institution_name']] = [];
+		if(!array_key_exists($row['institution_number'],$institutions))
+			$institutions[$row['institution_number']] = ['institution_name' => $row['institution_name']];
 
-		if(!array_key_exists($row['discipline_name'],$institutions[$row['institution_name']]))
-			$institutions[$row['institution_name']][$row['discipline_name']] = [];
+		if(!array_key_exists($row['discipline_number'],$institutions[$row['institution_number']]))
+			$institutions[$row['institution_number']][$row['discipline_number']] = ['discipline_name' => $row['discipline_name']];
 
-		if(!array_key_exists($row['collection_name'],$institutions[$row['institution_name']][$row['discipline_name']]))
-			$institutions[$row['institution_name']][$row['discipline_name']][$row['collection_name']] = [];
+		if(!array_key_exists($row['collection_number'],$institutions[$row['institution_number']][$row['discipline_number']]))
+			$institutions[$row['institution_number']][$row['discipline_number']][$row['collection_number']] = [ 'collection_name' => $row['collection_name']];
 
-		$institutions[$row['institution_name']][$row['discipline_name']][$row['collection_name']][] = [strtotime($row['timestamp']),$row['co_count'],$row['collection_number'],$row['track_id']];
+		$institutions[$row['institution_number']][$row['discipline_number']][$row['collection_number']][strtotime($row['timestamp'])] = [$row['co_count'],$row['track_id']];
 
 	}
 

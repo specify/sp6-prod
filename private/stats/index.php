@@ -9,7 +9,8 @@ const JQUERY = TRUE;
 const TIMEZONE = 'UTC';
 
 require_once('../components/header.php');
-require_once('../components/Cache_query.php');
+require_file('../config/cache.php');
+require_file('Cache_query.php');
 
 
 //INITIALIZE GET PARAMETERS
@@ -107,32 +108,40 @@ if(count($institutions) == 0)
 $institutions_count = 0;
 $disciplines_count = 0;
 $collections_count = 0;
-$records_count = 0;
+$reports_count = 0;
 
-foreach($institutions as $institution_name => &$disciplines){
+foreach($institutions as $institution_number => &$disciplines){
 
 	ksort($disciplines);
-	foreach($disciplines as $discipline_name => &$collections){
+	foreach($disciplines as $discipline_number => &$collections){
+
+		if($discipline_number=='institution_name')
+			continue;
 
 		ksort($collections);
-		foreach($collections as $collection_name => &$records){
+		foreach($collections as $collection_number => &$reports){
 
-			foreach($records as $key => $record)
-				if($record[0]<$date_1 || $record[0]>$date_2)
-					unset($records[$key]);
+			if($collection_number=='discipline_name')
+				continue;
 
-			$local_records_count = count($records);
-			if($local_records_count==0)
-				unset($collections[$collection_name]);
+			krsort($reports);
+			foreach($reports as $key => $report)
+				if($key!='collection_name' && ($report[0]<$date_1 || $report[0]>$date_2))
+					unset($reports[$key]);
+
+			$local_reports_count = count($reports);
+			if($local_reports_count==0)
+				unset($collections[$collection_number]);
 			else
-				$records_count += $local_records_count;
+				$reports_count += $local_reports_count;
+
 
 		}
 
 		$local_collections_count = count($collections);
 
 		if($local_collections_count==0)
-			unset($disciplines[$discipline_name]);
+			unset($disciplines[$discipline_number]);
 		else
 			$collections_count += $local_collections_count;
 
@@ -141,7 +150,7 @@ foreach($institutions as $institution_name => &$disciplines){
 	$local_disciplines_count = count($disciplines);
 
 	if($local_disciplines_count==0)
-		unset($institutions[$institution_name]);
+		unset($institutions[$institution_number]);
 	else
 		$disciplines_count += $local_disciplines_count;
 
@@ -158,34 +167,36 @@ unset($data); ?>
 	<?=$institutions_count?> institutions<br>
 	<?=$disciplines_count?> disciplines<br>
 	<?=$collections_count?> collections<br>
-	<?=$records_count?> records<br>
+	<?=$reports_count?> reports<br>
 </div>
 
-<ol class="pl-2"> <?php
+<ol> <?php
 
-	foreach($institutions as $institution_name => $disciplines){
+	foreach($institutions as $institution_number => $institution_data){
 
-		echo '<li><span>'.$institution_name.'</span>
+		echo '<li><span>'.$institution_data['institution_name'].'</span>
 				<ul>';
+		unset($institution_data['institution_name']);
 
-		foreach($disciplines as $discipline_name => $collections){
+		foreach($institution_data as $discipline_number => $discipline_data){
 
-			echo '
-				<li><span>'.$discipline_name.'</span>
+			echo '<li><span>'.$discipline_data['discipline_name'].'</span>
 					<ul>';
+			unset($discipline_data['discipline_name']);
 
-			foreach($collections as $collection_name => $data){
+			foreach($discipline_data as $collection_number => $collection_data){
 
-				echo '<li><a href="'.LINK.'collection/?collection_number=' . $record[2] . '">'.$collection_name.'</a>';
+				echo '<li><a href="'.LINK.'collection/?collection_number=' . $collection_number . '">'.$collection_data['collection_name'].'</a>';
 				$result = '<ul class="list_condensed">';
+				unset($collection_data['collection_name']);
 
 				$max_count = -1;
-				foreach($data as $record){
+				foreach($collection_data as $unix_time => $report_data){
 
-					$result .= '<li><a target="_blank" href="'.LINK.'track/?track_id=' . $record[3] . '">' . date(DATE_FORMATTER, $record[0]) . '</a> [' . $record[1] . ']</li>';
+					$result .= '<li><a target="_blank" href="'.LINK.'track/?track_id=' . $report_data[1] . '">' . date(DATE_FORMATTER, $unix_time) . '</a> [' . $report_data[0] . ']</li>';
 
-					if($max_count==-1 || $max_count<$record[1])
-						$max_count = $record[1];
+					if($max_count==-1 || $max_count<$report_data[0])
+						$max_count = $report_data[0];
 
 				}
 
@@ -216,6 +227,11 @@ unset($data); ?>
 	let search_query = '<?=$_GET['search_query']?>';
 	let date1_val = <?=intval($date_1)?>;
 	let date2_val = <?=intval($date_2)?>;
+
+	const initial_institutions_count = '<?=$institutions_count?>';
+	const initial_disciplines_count = '<?=$disciplines_count?>';
+	const initial_collections_count = '<?=$collections_count?>';
+	const initial_reports_count = '<?=$reports_count?>';
 
 </script>
 <script src="<?=LINK?>static/js/search<?=JS_EXTENSION?>"></script>

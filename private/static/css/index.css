@@ -1,14 +1,14 @@
 a {
-	display: block;
-	background-color: #ccc;
-	border: 1px solid #ddd;
-	color: #000;
-	text-decoration: none;
-	font-family: 'Calibri', sans-serif;
-	font-size: 30px;
-	padding: 20px;
+	display          : block;
+	background-color : #ccc;
+	border           : 1px solid #ddd;
+	color            : #000;
+	text-decoration  : none;
+	font-family      : "Calibri", sans-serif;
+	font-size        : 30px;
+	padding          : 20px;
 }
 
 a:hover {
-	background-color: #aaa;
+	background-color : #aaa;
 }

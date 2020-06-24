@@ -3,7 +3,8 @@
 const DATABASE = 'exception';
 
 require_once('../components/header.php');
-require_once('../components/Cache_query.php');
+require_file('../config/cache.php');
+require_file('Cache_query.php');
 
 $unix_begin = date('Y-m-d 00:00:00', time() - 86400*40);
 
@@ -23,7 +24,7 @@ $columns = ['ExceptionID','TimestampCreated','TaskName','Title','Bug','Comments'
 $empty_columns = $columns;
 
 $update_cache = array_key_exists('update_cache',$_GET) && $_GET['update_cache'] == 'true';
-$cache = new Cache_query($query,WORKING_DIRECTORY.'cache/','exceptions.csv',CACHE_DURATION, $columns, WORKING_DIRECTORY.'cache_info.json', $update_cache);
+$cache = new Cache_query($query,'exceptions.csv', $columns, $update_cache);
 $data = $cache->get_result();
 
 

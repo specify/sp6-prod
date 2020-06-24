@@ -1,6 +1,7 @@
 <?php
 
 ignore_user_abort(TRUE);
+set_time_limit(300);
 
 const NO_HEAD = TRUE;
 require_once('../components/header.php');

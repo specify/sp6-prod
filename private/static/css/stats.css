@@ -1,31 +1,36 @@
 .list_condensed {
-	display: none;
+	display : none;
 }
 
 input, select {
-	display: inline !important;
-	width: auto !important;
+	display : inline !important;
+	width   : auto !important;
 }
 
 ol {
-	list-style: none;
-	counter-reset: li;
+	list-style    : none;
+	counter-reset : li;
 }
 
 ol > li::before {
-	content: counter(li) ". ";
-	color: #212529;
-	display: inline-block;
-	width: 1em;
-	counter-increment: li;
-	margin-left: -0.3em;
-	padding-right: 0.3em;
+	content           : counter(li) ". ";
+	color             : #212529;
+	display           : inline-block;
+	counter-increment : li;
+	margin-left       : -1.9em;
+	padding-right     : 0.3em;
+	width             : 3em;
+	text-align        : right;
+}
+
+.greyed_out, .soft_greyed_out {
+	cursor: pointer;
 }
 
 .greyed_out, .soft_greyed_out > a, .soft_greyed_out > span, ol > li.soft_greyed_out::before {
-	opacity: 0.5;
+	opacity : 0.5;
 }
 
 ol > .greyed_out, .greyed_out .greyed_out {
-	display: none;
+	display : none;
 }

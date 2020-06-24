@@ -101,6 +101,12 @@ $(function(){
 			} catch(e) {}
 
 		}
+		else {
+			institutions_count = initial_institutions_count;
+			disciplines_count = initial_disciplines_count;
+			collections_count = initial_collections_count;
+			reports_count = initial_reports_count;
+		}
 
 		stats.html( institutions_count + ` institutions<br>` +
 			disciplines_count + ` disciplines<br>` +
@@ -112,5 +118,14 @@ $(function(){
 	if ( filter.val() !== '' )
 		search();
 
+	nodes.click(function(){
+
+		const el = $(this);
+		el.removeClass('greyed_out soft_greyed_out');
+
+		const children = el.find('li');
+		children.removeClass('greyed_out soft_greyed_out');
+
+	});
 
 });
