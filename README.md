@@ -9,7 +9,7 @@ This website provides some information on the usage of [Specify 6](https://githu
 
 ## `Private`
 
-The `private` directory is responsible for displaying the collected stats
+The `private` directory is responsible for displaying collected stats
 
 ### Installation
 All of the configuration parameters you must change for the site to work are located in `./config/required.php`
@@ -21,7 +21,7 @@ Those are used to change the error reporting level as well as determine the nece
 This is useful if you want the same code to work on multiple servers without any modifications.
 
 1. Open the `./config/required.php` file.
-Change the conditions present to make the server use neccessary values for the required constants depending on the server that is running the stats reporting site.
+Change the conditions present to make the server use necessary values for the required constants depending on the server that is running the stats reporting site.
 1. Set `LINK` to an address the website would be served on.
 1. Set `WORKING_LOCATION` to an empty folder.
 This would be the destination for all cache files and other files created in the process.
@@ -29,7 +29,7 @@ Make sure the webserver has **READ** and **WRITE** permissions to this folder.
 1. If you want to see raw tracking stats, set `TRACK_DAT_LOCATION` to your `track.dat` file.
 1. If you want to see raw registration stats, set `REG_DAT_LOCATION` to your `reg.dat` file.
 1. You will need to configure a database connection. Refer to the `Database connection` section below.
-1. Configure your webserver to point to the directory were this repository is saved.
+1. Configure your webserver to point to the directory where this repository is saved.
 1. It is recommended to set up daily cron to the following location `http://<yourdomain>/cron/refresh_data.php`. This will automatically unzip the files and compile the information so that users can get up to date information.
 
 
