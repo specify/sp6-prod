@@ -5,25 +5,29 @@ class Cache_query {
 	private $query;
 	private $file_location;
 	private $max_cache;
-	private $file_name = FALSE;
+	private $file_name;
+	private $file_exists = NULL;
 	private $time = 0;
-	private $cache_was_recreated = FALSE;
 	private $columns;
 	private $line_separator;
 	private $column_separator;
+	private $misc_file_location;
 
-	public function __construct($query, $file_location, $max_cache, $columns, $update_cache=FALSE, $column_separator="`%L&6", $line_separator="8#`/W"){
+	public $cache_was_recreated = FALSE;
+
+	public function __construct($query, $file_location, $file_name, $max_cache, $columns, $misc_file_location, $update_cache=FALSE, $column_separator="`%L&6", $line_separator="8#`/W"){
 
 		$this->query = $query;
 		$this->file_location = $file_location;
+		$this->file_name = $file_name;
+		$this->file_exists = $file_name;
 		$this->max_cache = $max_cache;
 		$this->columns = $columns;
 		$this->column_separator = $column_separator;
 		$this->line_separator = $line_separator;
+		$this->misc_file_location = $misc_file_location;
 
-		if(!file_exists($file_location))
-			mkdir($file_location,0755,TRUE);
-		elseif($update_cache)
+		if(file_exists($file_location) && $update_cache)
 			$this->delete_file();
 
 	}
@@ -53,40 +57,17 @@ class Cache_query {
 		if($this->time !== 0)
 			return $this->time;
 
-		$file_name = $this->get_file_name();
-
-		if($file_name === FALSE)
+		if(!file_exists($this->misc_file_location))
 			return FALSE;
 
-		$unix_time = basename($file_name);
-		$unix_time = explode('.',$unix_time);
-		$unix_time = $unix_time[0];
+		$data = file_get_contents($this->misc_file_location);
+		$data = json_decode($data,TRUE);
 
-		$this->time = time()-$unix_time;
+		if(!array_key_exists($this->file_name,$data))
+			return FALSE;
 
+		$this->time = time()-$data[$this->file_name];
 		return $this->time;
-
-	}
-
-	private function get_file_name(){
-
-		if($this->file_name!='')
-			return $this->file_name;
-
-		if(!file_exists($this->file_location))
-			return FALSE;
-
-		$file = glob($this->file_location.'*.json');
-
-		if(count($file)!==1)
-			return FALSE;
-
-		$this->file_name = $file[0];
-
-		if(strlen($this->file_name)==0)
-			return FALSE;
-
-		return $this->file_name;
 
 	}
 
@@ -94,7 +75,7 @@ class Cache_query {
 
 		if(!$condensed)
 			echo '<div class="card bg-light text-dark">
-				<div class="card-body">'.$this->query.'<br><br>';
+				<div class="card-body"><input type="hidden" id="query" value="'.$this->query.'">';
 
 		$time = $this->get_time();
 		$time = $this->unix_time_to_human_time(time()-$time);
@@ -105,13 +86,13 @@ class Cache_query {
 		else
 			echo 'refreshed ';
 
+		if($result_count!==null)
+			echo 'Number of Entries: '.$result_count;
+
 		echo $time.'</div>';
 
-			if($result_count!==null)
-				echo 'Number of Entries: '.$result_count;
-
 		if(!$condensed)
-			echo '<br><br>
+			echo '
 			<a href="'.substr(LINK,0,-1).$_SERVER['REQUEST_URI'].'?update_cache=true" class="btn btn-primary">Refresh Cache</a><br>
 
 			</div>
@@ -121,17 +102,14 @@ class Cache_query {
 
 	private function read_cache(){
 
-		$file_name = $this->get_file_name();
+		$file_name = $this->file_location.$this->file_name;
 
-		if($this->get_time()>$this->max_cache ||
-		   $file_name == FALSE ||
-			!file_exists($file_name))
+		if(!file_exists($file_name) ||
+		   $this->get_time()===FALSE ||
+		   $this->get_time()>$this->max_cache)
 			return FALSE;
 
 		$data = file_get_contents($file_name);
-
-		if(strlen($data)==0)
-			return FALSE;
 
 		$lines = explode($this->line_separator, $data);
 		$result = [];
@@ -190,30 +168,16 @@ class Cache_query {
 
 	private function delete_file(){
 
-		$file_name = $this->get_file_name();
+		$target_file = $this->file_location.$this->file_name;
 
-		if($file_name===FALSE)
-			return TRUE;
+		if(file_exists($target_file))
+			unlink($target_file);
 
-		$file_name = $this->file_location.$file_name;
-
-		$this->file_name='';
-
-		if($file_name !== FALSE && file_exists($file_name) && is_file($file_name))
-			unlink($file_name);
-		else
-			return TRUE;
-
-		if(file_exists($file_name) && is_file($file_name))
-			return FALSE;
-
-		return TRUE;
+		return !file_exists($target_file);
 
 	}
 
 	private function write_cache($data){
-
-		$file_name = time().'.json';
 
 		$string = '';
 		if(count($this->columns)==1)
@@ -223,22 +187,30 @@ class Cache_query {
 				$string .= implode($this->column_separator,$line).$this->line_separator;
 
 		if($this->delete_file() === FALSE){
-			echo '<div class="alert alert-warning">Failed to delete '.$this->get_file_name().'. Permission denied</div>';
+			echo '<div class="alert alert-warning">Failed to delete '.$this->file_location.$this->file_name.'. Permission denied</div>';
 			return FALSE;
 		}
 
-		$target_file = $this->file_location.$file_name;
-		file_put_contents($target_file,$string);
+		if(!file_exists($this->file_location))
+			mkdir($this->file_location,0755,TRUE);
 
-		if(!file_exists($target_file)){
-			echo '<div class="alert alert-warning">Failed to create ' . $target_file . '. Permission denied</div>';
+		file_put_contents($this->file_location.$this->file_name,$string);
+
+		if(!file_exists($this->file_location.$this->file_name)){
+			echo '<div class="alert alert-warning">Failed to create ' . $this->file_location.$this->file_name . '. Permission denied</div>';
 			return FALSE;
 		}
 
-		$this->file_name = $file_name;
+		$this->file_exists = TRUE;
 		$this->time = 1;
 
-		return TRUE;
+		$data = [];
+		if(file_exists($this->misc_file_location))
+			$data = json_decode(file_get_contents($this->misc_file_location),TRUE);
+
+		$data[$this->file_name] = time();
+
+		return file_put_contents($this->misc_file_location,json_encode($data));
 
 	}
 

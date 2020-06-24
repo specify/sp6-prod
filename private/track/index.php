@@ -1,8 +1,10 @@
 <?php
 
 const DATABASE='stats';
+const JQUERY=TRUE;
 
 require_once('../components/header.php');
+require_once('../components/dictionary.php');
 
 if(!array_key_exists('track_id',$_GET) || !is_numeric($_GET['track_id']) || $_GET['track_id']=='')
 	exit('Invalid URL');
@@ -21,23 +23,6 @@ $query2 = 'SELECT `Name`, `CountAmt`, `Value` FROM `trackitem` `t` WHERE `tracki
 echo '<input id="query" type="hidden" value="' . $query . ';\n' . $query2 . ';">';
 $info = $mysqli->query($query2);
 
-$result = [];
-$dictionary_raw = file_get_contents('../static/csv/dictionary.csv');
-$dictionary_raw = explode("\n",$dictionary_raw);
-
-$dictionary = [];
-$current_category = '';
-foreach($dictionary_raw as $line){
-	$line = explode(',',$line);
-
-	if(count($line)==1){
-		$current_category = $line[0];
-		$dictionary[$current_category] = [];
-	}
-	else
-		$dictionary[$current_category][$line[0]]=$line[1];
-
-}
 
 $keys_dictionary = [];
 
@@ -127,7 +112,7 @@ foreach($result as $name => $data){ ?>
 	<table class="table table-striped">
 		<thead>
 			<tr>
-				<th><?=$name?></th>
+				<th><?=$categories[$name]?></th>
 				<th>Value</th>
 			</tr>
 		</thead>
@@ -139,7 +124,7 @@ foreach($result as $name => $data){ ?>
 
 }
 
-echo '<table class="table table-striped">';
+/*echo '<table class="table table-striped">';
 foreach($result as $name => $data){ ?>
 
 	<tr>
@@ -150,7 +135,7 @@ foreach($result as $name => $data){ ?>
 		echo '<tr><td>'.$key.'</td><td>'.$value . '<td></tr>';
 
 }
-echo '</table>';
+echo '</table>';*/
 
 
 footer();

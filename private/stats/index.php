@@ -12,18 +12,6 @@ require_once('../components/header.php');
 require_once('../components/Cache_query.php');
 
 
-//GET SPECIFY VERSIONS (and cache them)
-$specify_versions = [];
-
-$query = "SELECT DISTINCT `ti`.`value` AS 'specify_version'
-                           FROM `trackitem` `ti`
-			   WHERE `ti`.`name` = 'app_version'
-			   AND `ti`.`value` LIKE '6%'
-			   ORDER BY `ti`.`value` DESC";
-$columns = ['version'];
-$versions_cache = new Cache_query($query,WORKING_DIRECTORY.'versions/',CACHE_DURATION, $columns,FALSE,'','A');
-$specify_versions = $versions_cache->get_result();
-
 //INITIALIZE GET PARAMETERS
 $possible_parameters = ['date_1','date_2','show_last_days','update_cache','search_query','view'];
 foreach($possible_parameters as $parameter)
@@ -57,7 +45,7 @@ if($date_1>$date_2)
 
 
 $_GET['date_1'] = date('Y-m-d',$date_1);
-$_GET['date_2'] = date('Y-m-d',$date_2);?>
+$_GET['date_2'] = date('Y-m-d',$date_2); ?>
 
 
 <form class="mb-4" id="controls">
@@ -80,8 +68,8 @@ $_GET['date_2'] = date('Y-m-d',$date_2);?>
 
 	<label>
 		OR Show last
-		<input list="browsers"  id="show_last_days" class="form-control">
-		<datalist id="browsers">
+		<input list="days"  id="show_last_days" class="form-control">
+		<datalist id="days">
 			<option value="15">
 			<option value="30">
 			<option value="45">
@@ -173,17 +161,17 @@ unset($data); ?>
 	<?=$records_count?> records<br>
 </div>
 
-<ol> <?php
+<ol class="pl-2"> <?php
 
 	foreach($institutions as $institution_name => $disciplines){
 
-		echo '<li>'.$institution_name.'
+		echo '<li><span>'.$institution_name.'</span>
 				<ul>';
 
 		foreach($disciplines as $discipline_name => $collections){
 
 			echo '
-				<li>'.$discipline_name.'
+				<li><span>'.$discipline_name.'</span>
 					<ul>';
 
 			foreach($collections as $collection_name => $data){
@@ -194,7 +182,7 @@ unset($data); ?>
 				$max_count = -1;
 				foreach($data as $record){
 
-					$result .= '<li><a target="_blank" href="'.LINK.'track/?track_id=' . $record[3] . '">' . date('Y F j D', $record[0]) . '</a> [' . $record[1] . ']</li>';
+					$result .= '<li><a target="_blank" href="'.LINK.'track/?track_id=' . $record[3] . '">' . date(DATE_FORMATTER, $record[0]) . '</a> [' . $record[1] . ']</li>';
 
 					if($max_count==-1 || $max_count<$record[1])
 						$max_count = $record[1];
@@ -221,7 +209,7 @@ unset($data); ?>
 
 <script>
 
-	const link = '<?=LINK.'stats/'?>';
+	const link = '<?=LINK?>';
 
 	const view = '<?=$_GET['view']?>';
 	let show_last_days_val = '';
@@ -230,5 +218,6 @@ unset($data); ?>
 	let date2_val = <?=intval($date_2)?>;
 
 </script>
+<script src="<?=LINK?>static/js/search<?=JS_EXTENSION?>"></script>
 
 <?php footer();

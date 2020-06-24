@@ -6,7 +6,17 @@ global $mysqli;
 #ignore_user_abort(TRUE);
 #set_time_limit ( 120 );
 
-$target_dir = WORKING_DIRECTORY.'stats/';
+if(!defined('LINK')){
+
+	define('DATABASE','stats');
+	define('NO_HEAD',TRUE);
+	define('TIMEZONE','UTC');
+
+	require_once('../components/header.php');
+	require_once('../components/Cache_query.php');
+
+}
+
 
 if (!$mysqli->set_charset('utf8'))
 	exit('Error loading character set utf8: '.$mysqli->error);
@@ -57,49 +67,52 @@ WHERE      `ti_coln`.`value` IN (
                            `t`.`ip` >= '129.237.229.0'
                 )
            )
-    );";
+    )
+ORDER BY `t`.`TimestampCreated` DESC";
 
 $columns = ['co_count','institution_name','discipline_name','collection_name','collection_number','track_id','timestamp'];
 
-$update_cache = array_key_exists('update_cache',$_GET);
-$cache = new Cache_query($query,$target_dir,CACHE_DURATION, $columns, $update_cache);
+$update_cache = array_key_exists('update_cache',$_GET) && $_GET['update_cache']=='true';
+
+$cache = new Cache_query($query,WORKING_DIRECTORY.'cache/','stats.csv',CACHE_DURATION, $columns, WORKING_DIRECTORY.'cache_info.json', $update_cache);
 $data = $cache->get_result();
 $cache->get_status(null,TRUE);
 
-$institutions = [];
+$target_file = WORKING_DIRECTORY.'cache/data.json';
+if($cache->cache_was_recreated){
 
-foreach($data as $row){
+	$institutions = [];
 
-	if(!array_key_exists($row['institution_name'],$institutions))
-		$institutions[$row['institution_name']] = [];
+	foreach($data as $row){
 
-	if(!array_key_exists($row['discipline_name'],$institutions[$row['institution_name']]))
-		$institutions[$row['institution_name']][$row['discipline_name']] = [];
+		if(!array_key_exists($row['institution_name'],$institutions))
+			$institutions[$row['institution_name']] = [];
 
-	if(!array_key_exists($row['collection_name'],$institutions[$row['institution_name']][$row['discipline_name']]))
-		$institutions[$row['institution_name']][$row['discipline_name']][$row['collection_name']] = [];
+		if(!array_key_exists($row['discipline_name'],$institutions[$row['institution_name']]))
+			$institutions[$row['institution_name']][$row['discipline_name']] = [];
 
-	$institutions[$row['institution_name']][$row['discipline_name']][$row['collection_name']][] = [strtotime($row['timestamp']),$row['co_count'],$row['collection_number'],$row['track_id']];
+		if(!array_key_exists($row['collection_name'],$institutions[$row['institution_name']][$row['discipline_name']]))
+			$institutions[$row['institution_name']][$row['discipline_name']][$row['collection_name']] = [];
+
+		$institutions[$row['institution_name']][$row['discipline_name']][$row['collection_name']][] = [strtotime($row['timestamp']),$row['co_count'],$row['collection_number'],$row['track_id']];
+
+	}
+
+	function utf8ize( $mixed ) {
+
+		if (is_array($mixed))
+			foreach ($mixed as $key => $value)
+				$mixed[$key] = utf8ize($value);
+
+		elseif (is_string($mixed))
+			return mb_convert_encoding($mixed, "UTF-8", "UTF-8");
+
+		return $mixed;
+	}
+
+	$institutions = json_encode(utf8ize($institutions));
+	file_put_contents($target_file,$institutions);
 
 }
-
-foreach($institutions as $institution_name => &$disciplines)
-	foreach($disciplines as $discipline_name => &$collections)
-		foreach($collections as $collection_name => &$data)
-			array_multisort($data,SORT_DESC);
-
-
-function utf8ize( $mixed ) {
-
-	if (is_array($mixed))
-		foreach ($mixed as $key => $value)
-			$mixed[$key] = utf8ize($value);
-
-	elseif (is_string($mixed))
-		return mb_convert_encoding($mixed, "UTF-8", "UTF-8");
-
-	return $mixed;
-}
-
-$institutions = json_encode(utf8ize($institutions));
-file_put_contents(WORKING_DIRECTORY.'data.json',$institutions);
+else
+	$institutions = json_decode(file_get_contents($target_file),TRUE);

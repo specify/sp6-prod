@@ -23,6 +23,15 @@ if(!DEVELOPMENT || SHOW_ERRORS_IN_PRODUCTION){
 	ini_set('display_errors', 1);
 }
 
+if(DEVELOPMENT || USE_NON_MINIFIED_FILES_IN_PRODUCTION){
+	define('CSS_EXTENSION','.css');
+	define('JS_EXTENSION','.js');
+}
+else {
+	define('CSS_EXTENSION','.min.css');
+	define('JS_EXTENSION','.min.js');
+}
+
 if(!file_exists(WORKING_DIRECTORY))
 	mkdir(WORKING_DIRECTORY,0755,TRUE);
 
@@ -74,12 +83,12 @@ if(!defined('NO_HEAD') || NO_HEAD!==TRUE){
 			href="https://www.sustain.specifysoftware.org/wp-content/uploads/2017/06/sp_project_square-1-150x150.png">
 	<link
 				rel="stylesheet"
-				href="<?=LINK?>static/css/main.css"> <?php
+				href="<?=LINK?>static/css/main<?=CSS_EXTENSION?>"> <?php
 
 	if(defined('CSS')) { ?>
 		<link
 				rel="stylesheet"
-				href="<?=LINK?>static/css/<?=CSS?>.css"> <?php
+				href="<?=LINK?>static/css/<?=CSS?><?=CSS_EXTENSION?>"> <?php
 	}
 
 	if(!defined('BOOTSTRAP') || BOOTSTRAP){ ?>
@@ -98,7 +107,7 @@ if(!defined('NO_HEAD') || NO_HEAD!==TRUE){
 	}
 
 	if(defined('JS')){ ?>
-		<script src="<?=LINK?>static/js/<?=JS?>.js"></script> <?php
+		<script src="<?=LINK?>static/js/<?=JS?><?=JS_EXTENSION?>"></script> <?php
 	} ?>
 
 </head>

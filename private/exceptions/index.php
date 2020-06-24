@@ -5,12 +5,12 @@ const DATABASE = 'exception';
 require_once('../components/header.php');
 require_once('../components/Cache_query.php');
 
-$date_24_days_ago = date('Y-m-d 00:00:00', time() - 86400*24);
+$unix_begin = date('Y-m-d 00:00:00', time() - 86400*40);
 
 $query = "
 	SELECT * FROM `exception`
 	WHERE 
-		`TimestampCreated` > '" . $date_24_days_ago . "' AND
+		`TimestampCreated` > '" . $unix_begin . "' AND
 		`IP` NOT LIKE '129.237.%' AND
 		`ClassName` <> 'edu.ku.brc.specify.ui.HelpMgr' AND
 		`StackTrace` NOT LIKE 'java.lang.RuntimeException: Two controls have the same name%' AND
@@ -23,7 +23,7 @@ $columns = ['ExceptionID','TimestampCreated','TaskName','Title','Bug','Comments'
 $empty_columns = $columns;
 
 $update_cache = array_key_exists('update_cache',$_GET) && $_GET['update_cache'] == 'true';
-$cache = new Cache_query($query,WORKING_DIRECTORY.'exceptions/',CACHE_DURATION, $columns, $update_cache);
+$cache = new Cache_query($query,WORKING_DIRECTORY.'cache/','exceptions.csv',CACHE_DURATION, $columns, WORKING_DIRECTORY.'cache_info.json', $update_cache);
 $data = $cache->get_result();
 
 
@@ -35,8 +35,7 @@ $keys = [];
 
 $cache->get_status(); ?>
 
-
-<table class="table table-striped mt-5 mb-5">
+<table class="table table-striped mt-4 mb-4">
 	<thead>
 		<tr>
 			<th>File Location</th>
@@ -116,8 +115,6 @@ $cache->get_status(); ?>
 </table>
 
 
-
-
 <table class="table table-striped mb-5"> <?php
 
 function print_headers($headers){
@@ -155,9 +152,10 @@ foreach($data as $key => $row){
 
 		}
 	echo '</tr>';
-}
+} ?>
 
-echo '</tbody>';
+</tbody>
+</table>
 
-
+<?php
 footer();
