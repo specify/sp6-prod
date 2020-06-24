@@ -102,32 +102,35 @@ $_GET['date_2'] = date('Y-m-d',$date_2); ?>
 $institutions = json_decode(file_get_contents(WORKING_DIRECTORY.'data.json'),TRUE);
 
 if(count($institutions) == 0)
-	exit();
+	exit('No institutions found. Try refreshing data');
 
 //filtering and counting
 $institutions_count = 0;
 $disciplines_count = 0;
 $collections_count = 0;
 $reports_count = 0;
+$most_recent_unix = -1;
 
 foreach($institutions as $institution_number => &$disciplines){
 
-	ksort($disciplines);
 	foreach($disciplines as $discipline_number => &$collections){
 
 		if($discipline_number=='institution_name')
 			continue;
 
-		ksort($collections);
 		foreach($collections as $collection_number => &$reports){
 
 			if($collection_number=='discipline_name')
 				continue;
 
-			krsort($reports);
-			foreach($reports as $key => $report)
-				if($key!='collection_name' && ($report[0]<$date_1 || $report[0]>$date_2))
-					unset($reports[$key]);
+			foreach($reports as $timestamp => $report){
+
+				if($most_recent_unix==-1 || $most_recent_unix<$timestamp)
+					$most_recent_unix = $timestamp;
+
+				if($timestamp != 'collection_name' && ($timestamp < $date_1 || $timestamp > $date_2))
+					unset($reports[$timestamp]);
+			}
 
 			$local_reports_count = count($reports);
 			if($local_reports_count==0)
@@ -163,6 +166,13 @@ unset($collections);
 unset($data); ?>
 
 
+<script>
+
+	const cache_status = $('#cache_status');
+	cache_status.append('<br>Most recent record is from <?=unix_time_to_human_time($most_recent_unix)?>');
+
+</script>
+
 <div class="alert alert-info" id="stats">
 	<?=$institutions_count?> institutions<br>
 	<?=$disciplines_count?> disciplines<br>
@@ -186,7 +196,7 @@ unset($data); ?>
 
 			foreach($discipline_data as $collection_number => $collection_data){
 
-				echo '<li><a href="'.LINK.'collection/?collection_number=' . $collection_number . '">'.$collection_data['collection_name'].'</a>';
+				echo '<li><a href="'.LINK.'collection/?collection_number=' . $collection_number . '" target="_blank">'.$collection_data['collection_name'].'</a>';
 				$result = '<ul class="list_condensed">';
 				unset($collection_data['collection_name']);
 
@@ -195,7 +205,7 @@ unset($data); ?>
 
 					$result .= '<li><a target="_blank" href="'.LINK.'track/?track_id=' . $report_data[1] . '">' . date(DATE_FORMATTER, $unix_time) . '</a> [' . $report_data[0] . ']</li>';
 
-					if($max_count==-1 || $max_count<$report_data[0])
+					if($max_count==-1 || (CO_PREVIEW_MODE==0 && $max_count<$report_data[0]))
 						$max_count = $report_data[0];
 
 				}

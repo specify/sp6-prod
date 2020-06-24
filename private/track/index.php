@@ -29,7 +29,6 @@ $keys_dictionary = [];
 foreach($dictionary as $category => $result_data)
 	$keys_dictionary[$category] = array_keys($result_data);
 
-
 while($results = $info->fetch_assoc()){
 
 	$name = $results['Name'];
@@ -89,21 +88,7 @@ if($ip != ''){ ?>
 		IP address: <a target="_blank" href="<?=LINK?>ip_info/?ip=<?=$ip?>"><?=$ip?></a>
 	</p>
 	<p id="org"></p>
-
-	<script>
-		const xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function() {
-			if (this.status !== 200)//request.readyState == 4
-				return;
-
-			if(this.responseText==='')
-				return;
-
-			$( "#org" ).text( "Possible Institution: " + $( "<div>" ).html(this.responseText).text() );
-		};
-		xhttp.open("GET", "../components/get_url.php?ip=<?=$ip?>", true);
-		xhttp.send();
-	</script> <?php
+	<script src="<?=LINK?>static/js/track<?=JS_EXTENSION?>"></script><?php
 
 }
 

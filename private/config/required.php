@@ -37,7 +37,7 @@ elseif(CONFIGURATION==='ec2'){
 
 	define('WORKING_DIRECTORY','/home/ec2-user/data/sp6-prod_data/');}
 
-else {
+else {//production server
 
 	define('LINK', 'http://biwebdbtest.nhm.ku.edu/sp6-prod/');
 

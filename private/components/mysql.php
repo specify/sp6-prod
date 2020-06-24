@@ -16,7 +16,7 @@ if(!isset($mysql_pwd))
 
 
 if(!defined('DATABASE'))
-	exit();
+	exit('DATABASE constant is not defined');
 
 
 $mysqli = new mysqli($mysql_hst, $mysql_usr, $mysql_pwd, DATABASE);

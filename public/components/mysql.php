@@ -13,7 +13,7 @@ if(!isset($mysql_pwd))
 	$mysql_pwd = 'root';
 
 if(!defined('DATABASE'))
-	exit();
+	exit('DATABASE constant is not defined');
 
 $mysqli = new mysqli($mysql_hst, $mysql_usr, $mysql_pwd, DATABASE);
 

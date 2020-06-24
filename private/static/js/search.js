@@ -78,7 +78,7 @@ $(function(){
 						if(!discipline_matches && !collections_match)
 							discipline.addClass('greyed_out');
 						else {
-							if(collections_match)
+							if(!discipline_matches && collections_match)
 								discipline.addClass( 'soft_greyed_out' );
 
 							disciplines_match = true;
@@ -90,7 +90,7 @@ $(function(){
 					if(!institution_matches && !disciplines_match)
 						institution.addClass('greyed_out');
 					else {
-						if(disciplines_match)
+						if(!institution_matches && disciplines_match)
 							institution.addClass( 'soft_greyed_out' );
 
 						institutions_count++;
@@ -121,10 +121,16 @@ $(function(){
 	nodes.click(function(){
 
 		const el = $(this);
+
+		if(!el.is('li') || !(el.hasClass('greyed_out') || el.hasClass('soft_greyed_out')))
+			return true;
+
 		el.removeClass('greyed_out soft_greyed_out');
 
 		const children = el.find('li');
 		children.removeClass('greyed_out soft_greyed_out');
+
+		return false;
 
 	});
 

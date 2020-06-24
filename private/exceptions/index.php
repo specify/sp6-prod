@@ -6,7 +6,7 @@ require_once('../components/header.php');
 require_file('../config/cache.php');
 require_file('Cache_query.php');
 
-$unix_begin = date('Y-m-d 00:00:00', time() - 86400*40);
+$unix_begin = date('Y-m-d 00:00:00', time() - 86400*DEFAULT_SHOW_LAST_DAYS);
 
 $query = "
 	SELECT * FROM `exception`

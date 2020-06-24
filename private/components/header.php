@@ -1,19 +1,7 @@
 <?php
 
-//TODO: use min files when under production
 
-function require_file($require){
-
-	require_once(dirname(__FILE__).'/'.$require);
-
-}
-
-function footer(){
-
-	require_file('footer.php');
-
-}
-
+require_once(dirname(__FILE__).'/functions.php');
 require_file('../config/required.php');
 require_file('../config/optional.php');
 
