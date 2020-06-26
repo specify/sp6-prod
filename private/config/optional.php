@@ -2,8 +2,8 @@
 
 
 ##exceptions/index.php
-# The amount of days exceptions would be shown for by default
-define('DEFAULT_SHOW_LAST_DAYS',24);
+# The amount of exceptions to fetch
+define('EXCEPTIONS_LIMIT',300);
 
 
 ##chart/index.php
@@ -27,9 +27,7 @@ define('CO_PREVIEW_MODE',1);
 
 ##refresh_data/index.php
 # An array of usernames that should be excluded from the query results when fetching stats
-define('USERNAMES_TO_EXCLUDE',['rods', 'tlammer', 'timo', 'mambo', 'm001p596']);
-
-
+define('USERNAMES_TO_EXCLUDE',['rods', 'tlammer', 'timo', 'mambo', 'm001p596', 'testuser', 'demouser', 'sp7demofish', 'testfish']);
 
 
 

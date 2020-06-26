@@ -27,8 +27,12 @@ ol > li::before {
 	cursor: pointer;
 }
 
-.greyed_out, .soft_greyed_out > a, .soft_greyed_out > span, ol > li.soft_greyed_out::before {
-	opacity : 0.5;
+.greyed_out {
+	opacity : 0.4;
+}
+
+.soft_greyed_out > a, .soft_greyed_out > span, ol > li.soft_greyed_out::before {
+	opacity: 0.7;
 }
 
 ol > .greyed_out, .greyed_out .greyed_out {

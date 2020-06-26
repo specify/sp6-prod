@@ -29,6 +29,7 @@ $keys_dictionary = [];
 foreach($dictionary as $category => $result_data)
 	$keys_dictionary[$category] = array_keys($result_data);
 
+$result = [];
 while($results = $info->fetch_assoc()){
 
 	$name = $results['Name'];

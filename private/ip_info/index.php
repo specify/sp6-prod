@@ -10,6 +10,9 @@ $ip_address = $_GET['ip'];
 
 $ip_data = json_decode(file_get_contents("http://ip-api.com/json/".$ip_address."?fields=country,regionName,city,org,reverse"),true);
 
+if(count($ip_data)==0)
+	exit('<div class="alert alert-danger">No information found about this IP address</div>');
+
 $column_mapping = [
 		'ip' => 'IP Address',
 		'country' => 'Country',

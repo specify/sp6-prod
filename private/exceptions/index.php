@@ -3,38 +3,16 @@
 const DATABASE = 'exception';
 
 require_once('../components/header.php');
-require_file('../config/cache.php');
-require_file('Cache_query.php');
-
-$unix_begin = date('Y-m-d 00:00:00', time() - 86400*DEFAULT_SHOW_LAST_DAYS);
-
-$query = "
-	SELECT * FROM `exception`
-	WHERE 
-		`TimestampCreated` > '" . $unix_begin . "' AND
-		`IP` NOT LIKE '129.237.%' AND
-		`ClassName` <> 'edu.ku.brc.specify.ui.HelpMgr' AND
-		`StackTrace` NOT LIKE 'java.lang.RuntimeException: Two controls have the same name%' AND
-		`StackTrace` NOT LIKE 'Multiple %' AND
-		`StackTrace` NOT LIKE 'edu.ku.brc.ui.forms.persist.FormCell%' AND
-		`StackTrace` NOT LIKE 'java.lang.RuntimeException: Two controls have the same id%'
-	ORDER BY `ExceptionID` DESC";
-
-$columns = ['ExceptionID','TimestampCreated','TaskName','Title','Bug','Comments','StackTrace','ClassName','Id','OSName','OSVersion','JavaVersion','JavaVendor','UserName','IP','AppVersion','collection','discipline','division','institution','DoIgnore'];
-$empty_columns = $columns;
-
-$update_cache = array_key_exists('update_cache',$_GET) && $_GET['update_cache'] == 'true';
-$cache = new Cache_query($query,'exceptions.csv', $columns, $update_cache);
-$data = $cache->get_result();
-
+require_once('../config/cache.php');
+require_once('../components/Cache_query.php');
+require_once('../refresh_data/exceptions.php');
 
 $total_number_of_occurrences = [];
 $exception_ids = [];
 $file_location = [];
 $keys = [];
 
-
-$cache->get_status(); ?>
+$cache->get_status(LINK,'exceptions'); ?>
 
 <table class="table table-striped mt-4 mb-4">
 	<thead>
@@ -50,11 +28,11 @@ $cache->get_status(); ?>
 		foreach($data as $key => $row){
 
 
-			if(!array_key_exists('StackTrace',$row))
+			if(!array_key_exists('stacktrace',$row))
 				continue;
 
 			$exception_id = $row['ExceptionID'];
-			$exception_statement = $row['StackTrace'];
+			$exception_statement = $row['stacktrace'];
 
 			foreach($empty_columns as $key_2 => $column)//hide sql cols that are always empty
 				if(strlen($column)!==0)

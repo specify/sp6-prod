@@ -36,7 +36,7 @@ $( function () {
 	//Construct URLs
 	function get_search() {
 		if ( search_query !== '' )
-			return 'search=' + search_query + '&';
+			return 'search_query=' + search_query + '&';
 		return '';
 	}
 
@@ -49,7 +49,6 @@ $( function () {
 	}
 
 	refresh_data_link.click( function () {
-		refresh_data_link.attr( 'target', '_blank' );
 		refresh_data_link.attr( 'href', link + 'stats/?' + get_dates() + get_search() + 'update_cache=true' );
 	} );
 

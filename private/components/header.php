@@ -32,7 +32,7 @@ else
 	date_default_timezone_set('America/Chicago');
 
 if(defined('DATABASE'))
-	require_file('mysql.php');
+	require(dirname(__FILE__).'/mysql.php');
 
 if(!defined('NO_HEAD') || NO_HEAD!==TRUE){
 

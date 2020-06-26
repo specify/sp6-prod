@@ -29,7 +29,14 @@ Make sure the webserver has **READ** and **WRITE** permissions to this folder.
 1. If you want to see raw registration stats, set `REG_DAT_LOCATION` to your `reg.dat` file.
 1. You will need to configure a database connection. Refer to the `Database connection` section below.
 1. Configure your webserver to point to the directory where this repository is saved.
-1. It is recommended to set up daily cron to the following location `http://<yourdomain>/cron/refresh_data.php`. This will automatically unzip the files and compile the information so that users can get up to date information.
+1. It is recommended to set up daily cron to the following location `http://<yourdomain>/cron/refresh_data.php`. This will automatically unzip the files and compile the information so that users can get up to date data.
+1. It is also highly recommended to create indexes for `track` and `trackitem` tables in the `stats` database:
+    ```sql
+    SHOW INDEX FROM `track`; # Show existing indexes for `track`
+    SHOW INDEX FROM `trackitem`; # Show existing indexes for `trackitem`
+    CREATE UNIQUE INDEX `track_index` on `track` (`trackid`,`ip`,`timestampcreated`); # Create indexes for `track`
+    CREATE UNIQUE INDEX `trackitem_index` on `trackitem` (`trackid`,`name`,`value`,`countamt`); # Create indexes for `trackitem`
+    ```
 
 
 #### Optional settings

@@ -101,7 +101,9 @@ class Cache_query {
 
 	}
 
-	public function get_status($result_count=null,$condensed=FALSE){
+	public function get_status($base_url='',$target_link='', $result_count=null){
+
+		$condensed = $base_url === FALSE;
 
 		if(!$condensed)
 			echo '<div class="card bg-light text-dark">
@@ -123,9 +125,9 @@ class Cache_query {
 		echo '</div>';
 
 		if(!$condensed)
-			echo '
-			<a href="'.substr(LINK,0,-1).$_SERVER['REQUEST_URI'].'?update_cache=true" class="btn btn-primary">Refresh Cache</a><br>
-
+			echo '<a href="'.$base_url.'" class="btn btn-info">Home Page</a>
+				<a href="'.$base_url.$target_link.'?update_cache=true" class="btn btn-primary">Refresh Cache</a>
+				<br>
 			</div>
 		</div>';
 

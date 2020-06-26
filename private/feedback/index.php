@@ -3,22 +3,13 @@
 const DATABASE = 'feedback';
 
 require_once('../components/header.php');
-require_file('../config/cache.php');
-require_file('Cache_query.php');
-
-
-$query = "SELECT * FROM `feedback` ORDER BY `FeedbackID` DESC";
-
-$columns = ['FeedbackID','TimestampCreated','Subject','Component','Issue','Comments','Id','OSName','OSVersion','JavaVersion','JavaVendor','AppVersion','Collection','Discipline','Division','Institution'];
-$empty_columns = $columns;
-
-$update_cache = array_key_exists('update_cache',$_GET) && $_GET['update_cache'] == 'true';
-$cache = new Cache_query($query,'feedback.csv', $columns, $update_cache);
-$data = $cache->get_result();
+require_once('../config/cache.php');
+require_once('../components/Cache_query.php');
+require_once('../refresh_data/feedback.php');
 
 $number_of_results = count($data);
 
-$cache->get_status($number_of_results); ?>
+$cache->get_status(LINK,'feedback/',$number_of_results); ?>
 
 <table class="table table-striped mt-5 mb-5"> <?php
 

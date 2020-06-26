@@ -20,8 +20,9 @@ foreach($possible_parameters as $parameter)
 		$_GET[$parameter] = '';
 
 
-$no_head = TRUE;
-require_file('../refresh_data/index.php');
+require_file('../refresh_data/stats.php');
+$cache->get_status(FALSE);
+
 
 $date_1 = $_GET['date_1'];
 $date_2 = $_GET['date_2'];
@@ -49,7 +50,7 @@ $_GET['date_1'] = date('Y-m-d',$date_1);
 $_GET['date_2'] = date('Y-m-d',$date_2); ?>
 
 
-<form class="mb-4" id="controls">
+<div class="mb-4" id="controls">
 
 	<label for="datepicker1">Accessed between:</label>
 	<input
@@ -80,13 +81,19 @@ $_GET['date_2'] = date('Y-m-d',$date_2); ?>
 	</label>
 	<br><br>
 
-	<div class="d-flex" style="align-items: flex-start">
-		<a
-			id="refresh_data_link"
-			class="btn btn-success mr-4"
-			href="#">Refresh Data</a>
 
-		<label>
+	<a
+		class="btn btn-info mr-4"
+		href="<?=LINK?>">Home Page</a>
+
+	<a
+		id="refresh_data_link"
+		class="btn btn-success mr-4"
+		href="#">Refresh Data</a>
+
+	<div class="btn-group">
+
+		<label class="mb-0">
 			<input
 					id="filter"
 					type="text"
@@ -94,9 +101,14 @@ $_GET['date_2'] = date('Y-m-d',$date_2); ?>
 					placeholder="Search Query"
 					value="<?=$_GET['search_query']?>">
 		</label>
+
+		<button id="search_button" class="btn btn-success">Search</button>
+
+		<button id="unfold_collections" class="btn btn-info disabled">Unfold all collections</button>
+
 	</div>
 
-</form> <?php
+</div> <?php
 
 
 $institutions = json_decode(file_get_contents(WORKING_DIRECTORY.'data.json'),TRUE);
@@ -125,25 +137,25 @@ foreach($institutions as $institution_number => &$disciplines){
 
 			foreach($reports as $timestamp => $report){
 
-				if($most_recent_unix==-1 || $most_recent_unix<$timestamp)
-					$most_recent_unix = $timestamp;
-
 				if($timestamp != 'collection_name' && ($timestamp < $date_1 || $timestamp > $date_2))
 					unset($reports[$timestamp]);
+
+				elseif($most_recent_unix==-1 || $most_recent_unix<$timestamp)
+					$most_recent_unix = $timestamp;
+
 			}
 
 			$local_reports_count = count($reports);
-			if($local_reports_count==0)
+			if($local_reports_count==1)
 				unset($collections[$collection_number]);
 			else
 				$reports_count += $local_reports_count;
-
 
 		}
 
 		$local_collections_count = count($collections);
 
-		if($local_collections_count==0)
+		if($local_collections_count==1)
 			unset($disciplines[$discipline_number]);
 		else
 			$collections_count += $local_collections_count;
@@ -152,12 +164,12 @@ foreach($institutions as $institution_number => &$disciplines){
 
 	$local_disciplines_count = count($disciplines);
 
-	if($local_disciplines_count==0)
+	if($local_disciplines_count==1)
 		unset($institutions[$institution_number]);
-	else
+	else {
 		$disciplines_count += $local_disciplines_count;
-
-	$institutions_count++;
+		$institutions_count++;
+	}
 
 }
 

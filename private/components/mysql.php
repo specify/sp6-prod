@@ -14,12 +14,13 @@ if(!isset($mysql_usr))
 if(!isset($mysql_pwd))
 	$mysql_pwd = 'root';
 
-
-if(!defined('DATABASE'))
+if(!isset($database) && !defined('DATABASE'))
 	exit('DATABASE constant is not defined');
+elseif(!isset($database))
+	$database = DATABASE;
 
 
-$mysqli = new mysqli($mysql_hst, $mysql_usr, $mysql_pwd, DATABASE);
+$mysqli = new mysqli($mysql_hst, $mysql_usr, $mysql_pwd, $database);
 
 if ($mysqli->connect_error)
 	die("Connection failed: " . $mysqli->connect_error);

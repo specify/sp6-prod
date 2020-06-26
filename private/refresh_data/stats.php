@@ -1,10 +1,11 @@
 <?php
 
-global $no_head;
 global $mysqli;
+global $cache;
 
 ignore_user_abort(TRUE);
 set_time_limit ( 300 );
+ini_set('memory_limit', '500M');
 
 if(!defined('LINK')){
 
@@ -22,8 +23,9 @@ if(!defined('LINK')){
 if(!$mysqli->set_charset('utf8'))
 	exit('Error loading character set utf8: ' . $mysqli->error);
 
+
 //Fetch query results and/or cache them
-if(is_array(USERNAMES_TO_EXCLUDE) || count(USERNAMES_TO_EXCLUDE)==0)
+if(!is_array(USERNAMES_TO_EXCLUDE) || count(USERNAMES_TO_EXCLUDE)==0)
 	$usernames_to_exclude = "''";
 elseif( count(USERNAMES_TO_EXCLUDE)==1)
 	$usernames_to_exclude = "'".USERNAMES_TO_EXCLUDE[0]."'";
@@ -70,20 +72,19 @@ INNER JOIN `trackitem` `ti_co`
       AND  `ti_co`.`name` = 'num_co'
 INNER JOIN `trackitem` `ti_user`
      ON    `ti_user`.`trackid` = `t`.`trackid`
-     AND   `ti_user`.`name` = 'user_name'
+     AND   `ti_user`.`name` = 'specifyuser'
      AND   `ti_user`.`value` NOT IN (".$usernames_to_exclude.")
-WHERE      `t`.`ip` NOT BETWEEN '129.237.201.0' AND '129.237.201.255'
-     AND   `t`.`ip` NOT BETWEEN '129.237.229.0' AND '129.237.229.255'
+WHERE      `t`.`ip` NOT BETWEEN '129.237.201.0' AND '129.237.201.999'
+     AND   `t`.`ip` NOT BETWEEN '129.237.229.0' AND '129.237.229.999'
 ORDER BY `t`.`timestampcreated` DESC";
 
 $columns = ['co_count', 'institution_name', 'institution_number', 'discipline_name', 'discipline_number', 'collection_name', 'collection_number', 'track_id', 'timestamp'];
 
 $update_cache = array_key_exists('update_cache', $_GET) && $_GET['update_cache'] == 'true';
 
-
 $cache = new Cache_query($query, 'stats.csv', $columns, $update_cache);
+
 $data = $cache->get_result();
-$cache->get_status(NULL, TRUE);
 
 $target_file = WORKING_DIRECTORY . 'data.json';
 if($cache->cache_was_recreated){
@@ -154,3 +155,5 @@ if($cache->cache_was_recreated){
 }
 else
 	$institutions = json_decode(file_get_contents($target_file), TRUE);
+
+return "Stats cache was refreshed<br>\n";
