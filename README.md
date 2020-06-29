@@ -48,7 +48,6 @@ The default value is set to 7 days[![analytics](http://www.google-analytics.com/
 
 ## `Public`
 The `public` directory is meant to be served at `specify6-prod.nhm.ku.edu`.
-The only configuration it requires is the set up of the database configuration. See the section below for that.
 
 ## Database connection
 There are identical PHP files `public/components/mysql.php` and `private/components/mysql.php`.
