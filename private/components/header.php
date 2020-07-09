@@ -99,6 +99,7 @@ if(!defined('NO_HEAD') || NO_HEAD!==TRUE){
 	} ?>
 
 </head>
-<body class="mb-4"> <?php
+<body class="mb-4">
+	<h1>Specify 6 Feedback Stats</h1><?php
 
 }

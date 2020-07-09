@@ -22,14 +22,22 @@ foreach($dictionary as $category => $category_data){ ?>
 			class="form-control">
 
 			<option value=""></option><?php
-			foreach($category_data as $column_name => $human_name){ ?>
-				<option value="<?=$column_name?>"><?=$human_name?></option><?php
+			foreach($category_data as $column_name => $human_name){
+
+				if($category=='database_stats' && $column_name=='num_co')
+					$selected = 'selected';
+				else
+					$selected = ''; ?>
+
+				<option value="<?=$column_name?>" <?=$selected?>><?=$human_name?></option><?php
+
 			} ?>
 
 		</select>
 	</label><br><?php
 
 } ?>
+<div id="alert" class="alert alert-info">Loading...</div>
 <div id="result"></div>
 <script>
 	const link = '<?=LINK?>';

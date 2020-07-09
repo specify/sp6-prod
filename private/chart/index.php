@@ -41,6 +41,10 @@ echo '<input id="query" type="hidden" value="' . $query . '">';
 $show_chart = NULL;
 $row = $result->fetch_assoc();
 
+//if($row == NULL)
+//	echo 'Not enough information';
+
+//else
 if($row['count']!==NULL){
 
 	$track_ids = [];

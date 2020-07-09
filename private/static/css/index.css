@@ -12,3 +12,7 @@ a {
 a:hover {
 	background-color : #aaa;
 }
+
+h1 {
+	font-family: "Calibri", sans-serif;
+}
