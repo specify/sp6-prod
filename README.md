@@ -61,6 +61,6 @@ There were snippets of code/files from the following resources used:
 - [Bootstrap 4.5.0](https://github.com/twbs/bootstrap)
 - [jQuery 3.5.1](https://github.com/jquery/jquery)
 - [Chart.js](https://github.com/chartjs/Chart.js)
-- [Specify 6 icon](https://www.sustain.specifysoftware.org/wp-content/uploads/2017/06/sp_project_square-1-150x150.png)
+- [Specify 6 icon](https://www.specifysoftware.org/wp-content/uploads/2017/06/sp_project_square-1-150x150.png)
 - [Cache_query.php](https://gist.github.com/maxxxxxdlp/91a39c6864365d7a8e813e19b819bb0d)
 - [unix_time_to_human_time.php](https://gist.github.com/maxxxxxdlp/54b7d6648a60a21a635f902de7a5d6b4)

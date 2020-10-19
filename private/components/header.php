@@ -36,7 +36,7 @@ if(defined('DATABASE'))
 
 if(!defined('NO_HEAD') || NO_HEAD!==TRUE){
 
-?><!-- Developed by Specify Software (https://www.sustain.specifysoftware.org/) -->
+?><!-- Developed by Specify Software (https://www.specifysoftware.org/) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -68,7 +68,7 @@ if(!defined('NO_HEAD') || NO_HEAD!==TRUE){
 			rel="icon"
 			type="image/png"
 			sizes="150x150"
-			href="https://www.sustain.specifysoftware.org/wp-content/uploads/2017/06/sp_project_square-1-150x150.png">
+			href="https://www.specifysoftware.org/wp-content/uploads/2017/06/sp_project_square-1-150x150.png">
 	<link
 				rel="stylesheet"
 				href="<?=LINK?>static/css/main<?=CSS_EXTENSION?>"> <?php
