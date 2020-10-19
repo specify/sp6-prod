@@ -43,7 +43,11 @@ SELECT     `ti_co`.`countamt`      AS `co_count`,
            `ti_coll`.`value`       AS 'collection_name',
            `ti_coln`.`value`       AS 'collection_number',
            `t`.`trackid`           AS 'track_id',
-           `t`.`timestampcreated`  AS 'timestamp'
+           IF(
+               `TimestampModified`=0,
+               `TimestampCreated`,
+               `TimestampModified`
+           )					   AS 'timestamp'
 FROM       `track` `t`
 INNER JOIN `trackitem` `ti_coll`
       ON   `ti_coll`.`trackid` = `t`.`trackid`
@@ -76,7 +80,7 @@ INNER JOIN `trackitem` `ti_user`
      AND   `ti_user`.`value` NOT IN (".$usernames_to_exclude.")
 WHERE      `t`.`ip` NOT BETWEEN '129.237.201.0' AND '129.237.201.999'
      AND   `t`.`ip` NOT BETWEEN '129.237.229.0' AND '129.237.229.999'
-ORDER BY `t`.`timestampcreated` DESC";
+ORDER BY `t`.`timestampmodified` DESC";
 
 $columns = ['co_count', 'institution_name', 'institution_number', 'discipline_name', 'discipline_number', 'collection_name', 'collection_number', 'track_id', 'timestamp'];
 

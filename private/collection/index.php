@@ -13,6 +13,13 @@ if(!array_key_exists('collection_number',$_GET) || $_GET['collection_number']=='
 
 $collection_number = $_GET["collection_number"];
 
+$query = "SELECT `TrackID` FROM `trackitem` WHERE `value` = '".$collection_number."' ORDER BY `TrackID` DESC LIMIT 1";
+$result = $mysqli->query($query);
+$row = $result->fetch_assoc();
+if(array_key_exists('TrackID',$row)){ ?>
+	<br><a class="btn btn-success" href="<?=LINK?>track/?track_id=<?=$row['TrackID']?>" target="_blank">Show Latest Report</a><br><br> <?php
+}
+
 
 foreach($dictionary as $category => $category_data){ ?>
 
