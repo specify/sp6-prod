@@ -15,7 +15,7 @@ require_file('Cache_query.php');
 
 
 //INITIALIZE GET PARAMETERS
-$possible_parameters = ['date_1','date_2','show_last_days','update_cache','search_query','view'];
+$possible_parameters = ['date_1','date_2','show_last_days','update_cache','search_query','view', 'institution'];
 foreach($possible_parameters as $parameter)
 	if(!array_key_exists($parameter,$_GET))
 		$_GET[$parameter] = '';
@@ -114,9 +114,6 @@ $_GET['date_2'] = date('Y-m-d',$date_2); ?>
 
 $institutions = json_decode(file_get_contents(WORKING_DIRECTORY.'data.json'),TRUE);
 
-if(count($institutions) == 0)
-	exit('No institutions found. Try refreshing data');
-
 //filtering and counting
 $institutions_count = 0;
 $disciplines_count = 0;
@@ -125,6 +122,11 @@ $reports_count = 0;
 $most_recent_unix = -1;
 
 foreach($institutions as $institution_number => &$disciplines){
+
+	if($_GET['institution']!='' && $institution_number!=$_GET['institution']){
+		$institutions[$institution_number]=null;
+		continue;
+	}
 
 	foreach($disciplines as $discipline_number => &$collections){
 
@@ -174,6 +176,9 @@ foreach($institutions as $institution_number => &$disciplines){
 
 }
 
+if($institutions_count == 0)
+	exit('No institutions found. Try refreshing the data or using different filters');
+
 unset($disciplines);
 unset($collections);
 unset($data); ?>
@@ -196,6 +201,9 @@ unset($data); ?>
 <ol> <?php
 
 	foreach($institutions as $institution_number => $institution_data){
+
+		if($institution_data===null)
+			continue;
 
 		echo '<li><span>'.$institution_data['institution_name'].'</span>
 				<ul>';
@@ -250,6 +258,7 @@ unset($data); ?>
 	let search_query = '<?=$_GET['search_query']?>';
 	let date1_val = <?=intval($date_1)?>;
 	let date2_val = <?=intval($date_2)?>;
+	const institution = <?=$_GET['institution']?>;
 
 	const initial_institutions_count = '<?=$institutions_count?>';
 	const initial_disciplines_count = '<?=$disciplines_count?>';

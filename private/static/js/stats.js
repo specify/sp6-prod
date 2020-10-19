@@ -24,7 +24,7 @@ $( function () {
 		if ( date1_val > date2_val )
 			[ date1_val, date2_val ] = [ date2_val, date1_val ];
 
-		window.location.href = link + 'stats/?' + get_dates() + get_search();
+		window.location.href = link + 'stats/?' + get_dates() + get_search() + get_institution();
 
 	}
 
@@ -48,8 +48,15 @@ $( function () {
 		return '';
 	}
 
+	function get_institution(){
+		if( institution !== '')
+			return 'institution='+institution+'&';
+		else
+			return '';
+	}
+
 	refresh_data_link.click( function () {
-		refresh_data_link.attr( 'href', link + 'stats/?' + get_dates() + get_search() + 'update_cache=true' );
+		refresh_data_link.attr( 'href', link + 'stats/?' + get_dates() + get_search() + get_institution() + 'update_cache=true' );
 	} );
 
 
@@ -69,6 +76,6 @@ $( function () {
 	//Remove ?update_cache=true from the URL
 	let url = window.location.href;
 	if ( url.indexOf( 'update_cache=true' ) !== -1 )
-		window.history.pushState( '', 'Specify 7 Stats', link + 'stats/?' + get_dates() + get_search() );
+		window.history.pushState( '', 'Specify 7 Stats', link + 'stats/?' + get_dates() + get_search() + get_institution() );
 
 } );

@@ -125,8 +125,10 @@ $( function () {
 
 						if ( ! discipline_matches && ! collections_match )
 							discipline.addClass( 'greyed_out' );
-						else if ( ! discipline_matches && collections_match )
+						else if ( ! discipline_matches && collections_match ) {
+							disciplines_match = true;
 							discipline.addClass( 'soft_greyed_out' );
+						}
 
 					} );
 

@@ -22,7 +22,7 @@ $selected_field = $_GET['selected_field'];
 $query = "
 SELECT     `ti_co`.`countamt` AS 'count',
            `ti_co`.`value` AS 'value',
-           `t`.`TimestampCreated` AS `date`,
+           `t`.`TimestampModified` AS `date`,
            `t`.`trackid` AS `track_id`
 FROM       `track` `t`
 INNER JOIN `trackitem` `ti_coln`
@@ -32,7 +32,7 @@ INNER JOIN `trackitem` `ti_coln`
 INNER JOIN `trackitem` `ti_co`
       ON   `ti_co`.`trackid` = `t`.`trackid`
       AND  `ti_co`.`name` = '".$selected_field."'
-ORDER BY   `t`.`TimestampCreated` DESC";
+ORDER BY   `t`.`TimestampModified` DESC";
 
 $result = $mysqli->query($query);
 echo '<input id="query" type="hidden" value="' . $query . '">';
