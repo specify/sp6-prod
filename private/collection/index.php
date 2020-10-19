@@ -8,7 +8,7 @@ require_once('../components/header.php');
 require_file('dictionary.php');
 require_file('charts.php');
 
-if(!array_key_exists('collection_number',$_GET) || !is_numeric($_GET['collection_number']) || $_GET['collection_number']=='')
+if(!array_key_exists('collection_number',$_GET) || $_GET['collection_number']=='')
 	exit('Invalid URL');
 
 $collection_number = $_GET["collection_number"];

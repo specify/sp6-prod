@@ -7,6 +7,7 @@ const CSS = 'stats';
 const JS = 'stats';
 const JQUERY = TRUE;
 const TIMEZONE = 'UTC';
+const MEMORY_LIMIT = '256M';
 
 require_once('../components/header.php');
 require_file('../config/cache.php');

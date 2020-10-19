@@ -50,7 +50,7 @@ INNER JOIN `trackitem` `ti_coll`
       AND  `ti_coll`.`name` = 'Collection_name'
 INNER JOIN `trackitem` `ti_coln`
       ON   `ti_coln`.`trackid` = `t`.`trackid`
-      AND  `ti_coln`.`name` = 'Collection_number'
+      AND  `ti_coln`.`name` = 'Collection_guid'
 INNER JOIN `trackitem` `ti_disc`
       ON   `ti_disc`.`trackid` = `t`.`trackid`
       AND  `ti_disc`.`name` = 'Discipline_name'
@@ -65,7 +65,7 @@ INNER JOIN `trackitem` `ti_inst`
       AND  `ti_inst`.`value` IS NOT NULL
 INNER JOIN `trackitem` `ti_insn`
       ON   `ti_insn`.`trackid` = `t`.`trackid`
-      AND  `ti_insn`.`name` = 'Institution_number'
+      AND  `ti_insn`.`name` = 'Institution_guid'
 	  AND  `ti_insn`.`value` <> ''
 INNER JOIN `trackitem` `ti_co`
       ON   `ti_co`.`trackid` = `t`.`trackid`

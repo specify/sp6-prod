@@ -8,7 +8,6 @@ require_once('../components/header.php');
 require_once('../components/dictionary.php');
 
 if( !array_key_exists('collection_number',$_GET) ||
-	!is_numeric($_GET['collection_number']) ||
 	$_GET['collection_number']=='' ||
 	!array_key_exists('category_name',$_GET) ||
 	!in_array($_GET['category_name'],array_keys($categories)) ||
@@ -28,8 +27,8 @@ SELECT     `ti_co`.`countamt` AS 'count',
 FROM       `track` `t`
 INNER JOIN `trackitem` `ti_coln`
       ON   `ti_coln`.`trackid` = `t`.`trackid`
-      AND  `ti_coln`.`name` = 'Collection_number'
-      AND  `ti_coln`.`value` = ".$collection_number."
+      AND  `ti_coln`.`name` = 'Collection_guid'
+      AND  `ti_coln`.`value` = '".$collection_number."'
 INNER JOIN `trackitem` `ti_co`
       ON   `ti_co`.`trackid` = `t`.`trackid`
       AND  `ti_co`.`name` = '".$selected_field."'

@@ -12,8 +12,8 @@ Institution_name,Institution name
 ISA_number,ISA number
 Collection_admin_name,Collection admin name
 Collection_admin_email,Collection admin email
-Collection_guid,Collection guid
-Institution_guid,Institution guid
+Collection_guid,Collection GUID
+Institution_guid,Institution GUID
 database_stats
 Collection_estsize,Collection estsize
 num_co,Collection Objects
