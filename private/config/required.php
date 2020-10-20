@@ -39,12 +39,12 @@ elseif(CONFIGURATION==='ec2'){
 
 else {//production server
 
-	define('LINK', 'http://biwebdbtest.nhm.ku.edu/sp6-prod/');
+	define('LINK', 'http://biwebdbtest.nhm.ku.edu/specify6-prod/');
 
 	define('TRACK_DAT_LOCATION','/home/anhalt/track.dat');
 
 	define('REG_DAT_LOCATION','/home/anhalt/reg.dat');
 
-	define('WORKING_DIRECTORY','/home/anhalt/sp6-prod_data/');
+	define('WORKING_DIRECTORY','/home/sp7-stats/tmp/sp6-stats/');
 
 }
