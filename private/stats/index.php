@@ -140,7 +140,10 @@ foreach($institutions as $institution_number => &$disciplines){
 
 			foreach($reports as $timestamp => $report){
 
-				if($timestamp != 'collection_name' && ($timestamp < $date_1 || $timestamp > $date_2))
+				if($timestamp === 'collection_name')
+					continue;
+
+				if($timestamp < $date_1 || $timestamp > $date_2)
 					unset($reports[$timestamp]);
 
 				elseif($most_recent_unix==-1 || $most_recent_unix<$timestamp)
@@ -177,12 +180,11 @@ foreach($institutions as $institution_number => &$disciplines){
 }
 
 if($institutions_count == 0)
-	exit('No institutions found. Try refreshing the data or using different filters');
+	echo 'No institutions found. Try refreshing the data or using different filters';
 
 unset($disciplines);
 unset($collections);
 unset($data); ?>
-
 
 <script>
 
@@ -258,7 +260,7 @@ unset($data); ?>
 	let search_query = '<?=$_GET['search_query']?>';
 	let date1_val = <?=intval($date_1)?>;
 	let date2_val = <?=intval($date_2)?>;
-	const institution = <?=$_GET['institution']?>;
+	const institution = '<?=$_GET['institution']?>';
 
 	const initial_institutions_count = '<?=$institutions_count?>';
 	const initial_disciplines_count = '<?=$disciplines_count?>';

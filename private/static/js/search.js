@@ -112,6 +112,9 @@ $( function () {
 						let discipline_matches = discipline_name.match( regex ) !== null;
 						let collections_match = false;
 
+						if(discipline_matches)
+							disciplines_match = true;
+
 						$.each( collections, function ( index, [ collection, collection_name, reports_count_local ] ) {
 
 							const collection_matches = collection_name.match( regex ) !== null;
